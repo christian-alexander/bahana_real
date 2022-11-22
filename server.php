@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 
 /**
  * Laravel - A PHP Framework For Web Artisans
@@ -18,4 +19,12 @@ if ($uri !== '/' && file_exists(__DIR__.'/public'.$uri)) {
     return false;
 }
 
+=======
+$uri = urldecode(
+    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
+);
+if ($uri !== '/' && file_exists(__DIR__.'/public'.$uri)) {
+    return false;
+}
+>>>>>>> ecf95e72501329fba4171bd49c29f34675e6abef
 require_once __DIR__.'/public/index.php';

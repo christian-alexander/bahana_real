@@ -1474,6 +1474,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('mark-superadmin-notification-read', ['uses' => 'SuperAdmin\NotificationController@markAllRead'])->name('mark-superadmin-notification-read');
     Route::get('show-all-super-admin-notifications', ['uses' => 'SuperAdmin\NotificationController@showAllSuperAdminNotifications'])->name('show-all-super-admin-notifications');
+<<<<<<< HEAD
 
     Route::get('/form-sounding-cargo', 'FormSoundingCargoController@show');
     Route::post('/form-sounding-cargo', 'FormSoundingCargoController@save');
@@ -1483,3 +1484,12 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 });
+=======
+});
+
+
+
+// FORM BIC
+Route::get('/form-audit-tanki', 'FormAuditTankiController@show');
+Route::post('/form-audit-tanki', 'FormAuditTankiController@save');
+>>>>>>> ecf95e72501329fba4171bd49c29f34675e6abef
