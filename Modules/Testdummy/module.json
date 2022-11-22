@@ -1,0 +1,26 @@
+{
+    "name": "Testdummy",
+    "alias": "testdummy",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 2,
+    "providers": [
+        "Modules\\Testdummy\\Providers\\TestdummyServiceProvider"
+    ],
+    "aliases":{},
+    "files": [
+        "start.php"
+    ],
+    "permissions": [
+        
+    ],
+    "roles_permissions": {
+        "admin": [
+            
+        ],
+        "manager": [
+            
+        ]
+    }
+}

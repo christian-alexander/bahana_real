@@ -1,0 +1,87 @@
+<?php
+
+return array(
+  'accepted' => ':attribute harus diterima.',
+  'active_url' => ':attribute bukan URL yang valid.',
+  'after' => ':attribute harus berupa tanggal setelah: tanggal.',
+  'after_or_equal' => ':attribute harus berupa tanggal setelah atau sama dengan: date.',
+  'alpha' => ':attribute hanya dapat berisi huruf.',
+  'alpha_dash' => ':attribute hanya dapat berisi huruf, angka, dan tanda hubung.',
+  'alpha_num' => ':attribute hanya dapat berisi huruf dan angka.',
+  'array' => ':attribute must a array.',
+  'before' => ':attribute harus berupa tanggal sebelum :date.',
+  'before_or_equal' => ':attribute harus berupa tanggal sebelum atau sama dengan :date.',
+  'between' =>
+  array(
+    'numeric' => ':attribute harus antara :min dan :max.',
+    'file' => ':attribute harus antara :min dan :max kilobyte.',
+    'string' => ':attribute harus antara :min dan :max karakter.',
+    'array' => ':attribute harus memiliki antara :min dan :max item.',
+  ),
+  'boolean' => ':attribute harus benar atau salah.',
+  'confirmed' => ':attribute konfirmasi tidak cocok.',
+  'date' => ':attribute bukan tanggal yang valid.',
+  'date_format' => ':attribute tidak cocok dengan format :format.',
+  'different' => ':attribute dan :other harus berbeda.',
+  'digits' => ':attribute harus :digits digit.',
+  'digits_between' => ':attribute harus antara :min dan :max digit.',
+  'dimensions' => ':attribute memiliki dimensi gambar tidak valid.',
+  'distinct' => ':attribute field memiliki nilai duplikat.',
+  'email' => ':attribute harus berupa alamat email yang valid.',
+  'exists' => ':attribute yang dipilih tidak valid.',
+  'file' => ':attribute must be a file.',
+  'filled' => ':attribute harus memiliki nilai.',
+  'image' => ':attribute harus berupa gambar.',
+  'in' => ':attribute yang dipilih tidak valid.',
+  'in_array' => ':attribute tidak ada di :other.',
+  'integer' => ':attribute harus berupa integer.',
+  'ip' => ':attribute harus berupa alamat IP yang valid.',
+  'json' => ':attribute harus berupa string JSON yang valid.',
+  'max' =>
+  array(
+    'numeric' => ':attribute mungkin tidak lebih besar dari :max.',
+    'file' => ':attribute mungkin tidak lebih besar dari :max kilobytes.',
+    'string' => ':attribute mungkin tidak lebih besar dari :max karakter.',
+    'array' => ':attribute mungkin tidak memiliki lebih dari :max item.',
+  ),
+  'mimes' => ':attribute harus berupa file type::values.',
+  'mimetypes' => ':attribute harus berupa file type::values.',
+  'min' =>
+  array(
+    'numeric' => ':attribute setidaknya harus :min.',
+    'file' => ':attribute setidaknya harus :min kilobytes.',
+    'string' => ':attribute setidaknya harus :max karakter.',
+    'array' => ':attribute setidaknya harus memiliki :min item.',
+  ),
+  'not_in' => ':attribute yang dipilih tidak valid.',
+  'numeric' => ':attribute harus berupa angka.',
+  'present' => ':attribute field harus ada.',
+  'regex' => ':attribute format tidak valid.',
+  'required' => ':attribute diperlukan.',
+  'required_if' => ':attribute diperlukan ketika :other adalah :value.',
+  'required_unless' => ':attribute diperlukan kecuali :other dalam :value.',
+  'required_with' => ':attribute diperlukan ketika :value ada.',
+  'required_with_all' => ':attribute diperlukan saat :value ada.',
+  'required_without' => ':attribute diperlukan saat :value tidak ada.',
+  'required_without_all' => 'Field :attribute diperlukan ketika tidak ada :value ada.',
+  'same' => ':attribute dan :other harus cocok.',
+  'size' =>
+  array(
+    'numeric' => ':attribute harus :size.',
+    'file' => ':attribute harus :size kilobytes.',
+    'string' => ':attribute harus :size karakter.',
+    'array' => ':attribute harus berisi :size item.',
+  ),
+  'string' => ':attribute must a string.',
+  'timezone' => ':attribute harus merupakan zona yang valid.',
+  'unique' => ':attribute telah diambil.',
+  'uploaded' => ':attribute gagal diunggah.',
+  'url' => ':attribute format tidak valid.',
+  'custom' =>
+  array(
+    'attribute-name' =>
+    array(
+      'rule-name' => 'custom-message',
+    ),
+  ),
+);

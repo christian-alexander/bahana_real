@@ -1,0 +1,975 @@
+<?php
+
+namespace Modules\RestAPI\Http\Controllers;
+
+use App\Designation;
+use App\EmployeeDetails;
+use Froiden\RestAPI\ApiResponse;
+use Modules\RestAPI\Entities\Leave;
+use Modules\RestAPI\Http\Requests\Leave\IndexRequest;
+use Modules\RestAPI\Http\Requests\Leave\CreateRequest;
+use Modules\RestAPI\Http\Requests\Leave\UpdateRequest;
+use Modules\RestAPI\Http\Requests\Leave\ShowRequest;
+use Modules\RestAPI\Http\Requests\Leave\DeleteRequest;
+use App\Http\Requests\API\APIRequest;
+use App\Helper\Files;
+use App\LeaveAccomodation;
+use App\LeaveActivity;
+use App\LeaveCuti;
+use App\LeaveDinasLuarKota;
+use App\LeaveDinasSementara;
+use App\LeaveIjin;
+use App\LeavePengeluaran;
+use App\Notifications\LeaveCreate;
+use App\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Modules\RestAPI\Entities\LeaveType;
+
+class LeaveController extends ApiBaseController
+{
+  protected $model = Leave::class;
+
+  protected $indexRequest = IndexRequest::class;
+  protected $storeRequest = CreateRequest::class;
+  protected $updateRequest = UpdateRequest::class;
+  protected $showRequest = ShowRequest::class;
+  protected $deleteRequest = DeleteRequest::class;
+
+  public function storeLeave(APIRequest $request)
+  {
+    $request->validate([
+      'leave_type_id' => 'required',
+      'leave_date' => 'required',
+      'leave_date_end' => 'required|after_or_equal:leave_date',
+    ]);
+
+    // check if leave_type_id is ijin
+    $checkLeaveType = LeaveType::find($request->leave_type_id);
+
+    if ($checkLeaveType->type_name == 'Ijin') {
+      $request->validate([
+        'alasan_izin' => 'required',
+      ]);
+    } elseif ($checkLeaveType->type_name == 'Cuti') {
+      $request->validate([
+        'tipe_cuti_id' => 'required',
+      ]);
+    } elseif ($checkLeaveType->type_name == 'Dinas sementara') {
+      $request->validate([
+        'jam_mulai' => 'required|date_format:H:i',
+        'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+        'tujuan_dinas' => 'required',
+      ]);
+    } elseif ($checkLeaveType->type_name == 'Dinas Luar Kota') {
+      $request->validate([
+        'rute_awal' => 'required',
+        'rute_akhir' => 'required',
+        'alasan' => 'required',
+        'biaya' => 'required',
+      ]);
+    }
+    $user = auth()->user();
+    
+    // get this year
+    $thisYear = Carbon::now()->format('Y');
+    
+    // get approved leave
+    $approvedLeave = Leave::whereIn('masking_status',['pending','done'])
+      ->where('leave_type_id',$checkLeaveType->id)
+      ->where('user_id',$user->id)
+      ->where('company_id',$user->company_id)
+      ->where(function($query) use ($thisYear){
+        $query->whereYear('leave_date',$thisYear)
+        ->orWhereYear('leave_date',$thisYear);
+      })
+      ->get();
+    $totalLeaveTaken = 0;
+    foreach ($approvedLeave as $val) {
+      // parse to carbon object
+      $start_date = Carbon::parse($val->leave_date);
+      $end_date = Carbon::parse($val->leave_date_end);
+      if ($start_date->copy()->format('Y')==$thisYear && $end_date->copy()->format('Y')==$thisYear) {
+        // logic date diff from start until end
+        $diff = $end_date->copy()->diffInDays($start_date)+1;
+      }else{
+        $dateEndOfYear = Carbon::now();
+        $dateEndOfYear = $dateEndOfYear->endOfYear();
+        $diff = $dateEndOfYear->diffInDays($start_date)+1;
+      }
+      $totalLeaveTaken = $totalLeaveTaken + $diff;
+    }
+    // dd("$totalLeaveTaken>=$checkLeaveType->no_of_leaves");
+    // check user still have leave 
+    if ($totalLeaveTaken>$checkLeaveType->no_of_leaves) {
+      return response()->json([
+        'error' => [
+          'status' => 404,
+          'message' => 'Jatah ijin anda telah habis',
+        ]
+      ]);
+    }
+    
+    // create leave
+    $model = new Leave;
+    $model->user_id = $user->id;
+    $model->leave_type_id = $request->leave_type_id;
+    $model->leave_date = Carbon::parse($request->leave_date);
+    $model->leave_date_end = $request->leave_date_end;
+    $model->duration = 'single';
+    $model->reason = isset($request->deskripsi) && !empty($request->deskripsi) ? $request->deskripsi : '-';
+    $model->status = 'pending';
+    $model->save();
+
+
+    if ($checkLeaveType->type_name == 'Ijin') {
+      // insert into leave_ijins
+      $child = new LeaveIjin;
+      $child->leave_id = $model->id;
+      $child->alasan_ijin = $request->alasan_izin;
+      $child->is_sakit = $request->alasan_izin == 'sakit' ? 1 : 0;
+      if (isset($request->surat_keterangan_sakit) && !empty($request->surat_keterangan_sakit)) {
+        $filename = Files::uploadLocalOrS3($request->surat_keterangan_sakit, "user-leaves/$user->id");
+        $child->surat_keterangan_sakit = public_file("user-leaves/$user->id/$filename");
+      }
+      $child->save();
+    } elseif ($checkLeaveType->type_name == 'Cuti') {
+      // insert into leave_cutis
+      $child = new LeaveCuti;
+      $child->leave_id = $model->id;
+      $child->kategori_cuti = $request->tipe_cuti_id;
+      // get jumlah cuti tersedia
+      $limitCuti = $checkLeaveType->no_of_leaves;
+      // get jumlah user ini telah cuti
+      // TODO: tambah filter by date
+      $getUserCuti = Leave::join('leave_cutis as lc', 'lc.leave_id', 'leaves.id')
+        ->count();
+      if ($getUserCuti >= $limitCuti) {
+        // cuti habis
+        // set is potong gaji = 1
+        $child->is_potong_gaji = 1;
+      }
+      $child->save();
+    } elseif ($checkLeaveType->type_name == 'Dinas sementara') {
+      // insert into leave_dinas_sementaras
+      $child = new LeaveDinasSementara;
+      $child->leave_id = $model->id;
+      $child->start_hour = $request->jam_mulai;
+      $child->end_hour = $request->jam_selesai;
+      $child->destination = $request->tujuan_dinas;
+      $child->save();
+    } elseif ($checkLeaveType->type_name == 'Dinas Luar Kota') {
+      // insert into leave_dinas_luar_kotas
+      $child = new LeaveDinasLuarKota;
+      $child->leave_id = $model->id;
+      $child->rute_awal = $request->rute_awal;
+      $child->rute_akhir = $request->rute_akhir;
+      $child->alasan = $request->alasan;
+      $child->biaya = $request->biaya;
+      $child->save();
+    }
+
+    // send notif to atasan 1
+    // get atasan
+    // get employeeDetail
+    $getEmployeeDetail = EmployeeDetails::where('user_id', $user->id)->first();
+    $arr_permission_require = $getEmployeeDetail->permission_require;
+    $arr_permission_require = json_decode($arr_permission_require);
+    if (isset($arr_permission_require[0]) && !empty($arr_permission_require[0])) {
+      
+        // send notif to atasan 1
+        $userNotif = User::find($arr_permission_require[0]);
+        $userNotif->notify(new LeaveCreate($model, $user));
+    }
+    return ApiResponse::make('Leave saved', [
+      'leave' => $model,
+      'child' => $child,
+    ]);
+  }
+  public function getDetail(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+    ]);
+    $user = auth()->user();
+    // get leave
+    $getLeave = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+      ->join('users as u', 'u.id', 'leaves.user_id')
+      ->join('employee_details as ed', 'ed.user_id', 'u.id')
+      ->where('leaves.id', $request->leave_id)
+      ->selectRaw('leaves.*,lt.type_name,u.name as requested_by,ed.permission_require')
+      ->first();
+    if (!isset($getLeave) && empty($getLeave)) {
+      return response()->json([
+        'error' => [
+          'status' => 404,
+          'message' => 'Data not found',
+        ]
+      ]);
+    }
+    $getLeave->approved_by_name = $this->data_by_name($getLeave->approved_by);
+    $getLeave->rejected_by_name = $this->data_by_name($getLeave->rejected_by, 'rejected');
+    $getLeave->formated_status =  ucfirst(str_replace('_', ' ', $getLeave->status));
+
+    // set need approval hrd to false
+    $getLeave->need_approval_hrd = false;
+
+    // check if login user can approve this request
+    $getLeave->can_approve = false;
+
+    // check if login user was sekretaris
+    $getLeave->is_sekretaris = false;
+    $getLeave->is_sekretaris_can_add_accomodation = false;
+
+    // check user is sekretaris
+    $getEmployeeDetail = EmployeeDetails::where('user_id', $user->id)->first();
+    // get jabatan
+    $getJabatan = Designation::where('company_id', $getLeave->company_id)
+      ->where('name', 'Sekretaris')
+      ->first();
+    if ($user->company_id == $getLeave->company_id && $getEmployeeDetail->designation_id == $getJabatan->id) {
+      $getLeave->is_sekretaris = true;
+    }
+
+    // set getAccomodations
+    $getAccomodations = [];
+
+    // get child by type leave
+    if ($getLeave->type_name == 'Ijin') {
+      $getChild = LeaveIjin::where('leave_id', $getLeave->id)->first();
+      if (isset($getChild->surat_keterangan_sakit) && !empty($getChild->surat_keterangan_sakit)) {
+        $getChild->surat_keterangan_sakit = url($getChild->surat_keterangan_sakit);
+      } else {
+        $getChild->surat_keterangan_sakit = null;
+      }
+    } elseif ($getLeave->type_name == 'Cuti') {
+      $getChild = LeaveCuti::where('leave_id', $getLeave->id)->first();
+    } elseif ($getLeave->type_name == 'Dinas sementara') {
+      $getChild = LeaveDinasSementara::where('leave_id', $getLeave->id)->first();
+      // check if leave status is approved atasan dua
+      $getLeave->dinas_mulai = false;
+      // if dinas sementara dinas begin when approved atasan tiga
+      if ($getLeave->status == 'approved_atasan_tiga') {
+        // this request has begin
+        $getLeave->dinas_mulai = true;
+        // if is_done = 1 then perjalanan dinas selesai
+        if ($getChild->is_done == 1) {
+          $getLeave->dinas_mulai = false;
+        }
+      }
+    } elseif ($getLeave->type_name == 'Dinas Luar Kota') {
+      // set need approval hrd to true
+      $getLeave->need_approval_hrd = true;
+      $getChild = LeaveDinasLuarKota::where('leave_id', $getLeave->id)->first();
+      $getLeave->dinas_mulai = false;
+      if ($getLeave->status == 'approved_atasan_dua') {
+        if ($getChild->is_approved_hrd == 1) {
+          // this request has begin
+          $getLeave->dinas_mulai = true;
+          // if is_done = 1 then perjalanan dinas selesai
+          if ($getChild->is_done == 1) {
+            $getLeave->dinas_mulai = false;
+          }
+        } elseif ($getChild->is_approved_hrd == null) {
+          // check user is hello@bahana.com
+          if ($user->isAdmin($user->id) && $user->company_id == $getLeave->company_id) {
+            $getLeave->can_approve = true;
+          }
+        }
+      }
+      // check if this request need accomodation
+      if ($getChild->butuh_akomodasi == 1) {
+        // this user can add note and file 
+        $getLeave->is_sekretaris_can_add_accomodation = true;
+      }
+      // get accomodations
+      $getAccomodations = LeaveAccomodation::leftjoin('users as u', 'u.id', 'leave_accomodations.created_by')
+        ->where('leave_dinas_luar_kotas_id', $getChild->id)
+        ->selectRaw('leave_accomodations.*,u.name as created_by_user')
+        ->get();
+      foreach ($getAccomodations as $val) {
+        $val->file = url($val->file);
+      }
+      if (!isset($getAccomodations) && empty($getAccomodations)) {
+        $getAccomodations = [];
+      }
+    }
+    $getLeave->child = $getChild;
+
+    // check if this user can approve this data 
+    $arr_permission_require = $getLeave->permission_require;
+    $arr_permission_require = json_decode($arr_permission_require);
+    for ($i = 0; $i < count($arr_permission_require); $i++) {
+      // check status
+      if ($getLeave->status == 'pending') {
+        if (isset($arr_permission_require[0]) && !empty($arr_permission_require[0])) {
+          if ($arr_permission_require[0] == $user->id) {
+            // approval tingkat 1
+            $getLeave->can_approve = true;
+          }
+        }
+      } elseif ($getLeave->status == 'approved_atasan_satu') {
+        if (isset($arr_permission_require[1]) && !empty($arr_permission_require[1])) {
+          if ($arr_permission_require[1] == $user->id) {
+            // approval tingkat 2
+            $getLeave->can_approve = true;
+          }
+        }
+      } elseif ($getLeave->status == 'approved_atasan_dua') {
+        // check if this request wasnt dinas luar kota
+        if ($getLeave->type_name != 'Dinas Luar Kota') {
+          // approval tingkat 3
+          if ($arr_permission_require[2] == $user->id) {
+            // approval tingkat 3
+            $getLeave->can_approve = true;
+          }
+        }
+      }
+    }
+    // get activity
+    $getActivity = LeaveActivity::join('users as u', 'u.id', 'leave_activities.triggered_by')
+      ->where('leave_activities.leave_id', $getLeave->id)
+      ->selectRaw('leave_activities.*,u.name as user_name,u.image')
+      ->orderBy('created_at', 'DESC')
+      ->get();
+    foreach ($getActivity as $val) {
+      if (empty($val->image)) {
+        $val->image = null;
+      } else {
+        $val->image = url('user-uploads/avatar/' . $val->image);
+      }
+    }
+
+    return ApiResponse::make('Detail Leave', [
+      'data' => $getLeave,
+      'activity' => $getActivity,
+      'accomodations' => $getAccomodations
+    ]);
+  }
+
+  public function setApproved($data, $dataBefore)
+  {
+    $dataBefore = json_decode($dataBefore);
+    if (empty($dataBefore)) {
+      $dataBefore = [];
+    }
+    array_push($dataBefore, $data);
+    return json_encode($dataBefore);
+  }
+  public function approveLeave(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+    ]);
+    $user = auth()->user();
+    // get leave
+    $getLeave = Leave::find($request->leave_id);
+    if (!isset($getLeave) && empty($getLeave)) {
+      return response()->json([
+        'error' => [
+          'status' => 404,
+          'message' => 'Data not found',
+        ]
+      ]);
+    }
+    try {
+      $approve = Leave::approveLeave($getLeave->id);
+      $approve = $approve->getData(true);
+      if (isset($approve['error']) && !empty($approve['error'])) {
+        $msg = $approve['error']['message'];
+        return response()->json([
+          'error' => [
+            'status' => 500,
+            'message' => $msg,
+          ]
+        ]);
+      }
+      return ApiResponse::make('Leave approved', [
+        'leave' => $approve['success']['data']['leave'],
+      ]);
+    } catch (\Throwable $e) {
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+  public function rejectLeave(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+      'reason' => 'required',
+    ]);
+    try {
+      $reject = Leave::rejectLeave($request);
+      $reject = $reject->getData(true);
+      if (isset($reject['error']) && !empty($reject['error'])) {
+        $msg = $reject['error']['message'];
+        return response()->json([
+          'error' => [
+            'status' => 500,
+            'message' => $msg,
+          ]
+        ]);
+      }
+      return ApiResponse::make('Leave rejected', [
+        'leave' => $reject['success']['data']['leave'],
+      ]);
+    } catch (\Throwable $e) {
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+  public function data_by_name($data, $for = 'approval')
+  {
+    if ($for == 'approval') {
+      $arr = \json_decode($data);
+      $arr_output = [];
+      if (!empty($arr)) {
+        if (count($arr) > 0) {
+          // select from user
+          foreach ($arr as $val) {
+            $getUser = User::find($val);
+            array_push($arr_output, $getUser->name);
+          }
+        }
+      }
+      return $arr_output;
+    } elseif ($for == 'rejected') {
+      $output = '';
+      if (isset($data) && !empty($data)) {
+        $getUser = User::find($data);
+        $output = $getUser->name;
+      }
+      return $output;
+    }
+  }
+  public function dinasToDone(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+    ]);
+    DB::beginTransaction();
+    try {
+      $user = auth()->user();
+      $getLeave = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+        ->whereIn('lt.type_name', ['Dinas sementara', 'Dinas Luar Kota'])
+        ->where('leaves.id', $request->leave_id)
+        ->selectRaw('leaves.*,lt.type_name')
+        ->first();
+      if (!isset($getLeave) && empty($getLeave)) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 404,
+            'message' => 'Data not found',
+          ]
+        ]);
+      }
+      if ($getLeave->type_name == 'Dinas Luar Kota') {
+        $getDinasLuarKota = LeaveDinasLuarKota::where('leave_id', $getLeave->id)->first();
+        // check just data with status approved can be using this function
+        if ($getDinasLuarKota->is_approved_hrd == 0 || $getDinasLuarKota->is_approved_hrd == null) {
+          DB::rollback();
+          return response()->json([
+            'error' => [
+              'status' => 501,
+              'message' => 'Only approved data can be mark to done',
+            ]
+          ]);
+        }
+        if ($getDinasLuarKota->is_done == 1) {
+          DB::rollback();
+          return response()->json([
+            'error' => [
+              'status' => 501,
+              'message' => 'Someone already take action for this request',
+            ]
+          ]);
+        }
+        $getDinasLuarKota->is_done = 1;
+        $getDinasLuarKota->done_at = Carbon::now();
+        $getDinasLuarKota->save();
+
+        $getLeave->masking_status = 'done';
+        $getLeave->save();
+
+        LeaveActivity::logActivityMarkToDone($getLeave->id, $user);
+
+        DB::commit();
+        return ApiResponse::make('Dinas luar kota completed successfully', [
+          'leave' => $getLeave,
+          'dinasLuarKota' => $getDinasLuarKota,
+        ]);
+      } else {
+        // dinas sementara
+        // check just dataa with status approved atasan tiga can be using this function
+        if ($getLeave->status != 'approved_atasan_tiga') {
+          DB::rollback();
+          return response()->json([
+            'error' => [
+              'status' => 501,
+              'message' => 'Only approved data can be mark to done',
+            ]
+          ]);
+        }
+        $getDinasSementara = LeaveDinasSementara::where('leave_id', $getLeave->id)->first();
+        if ($getDinasSementara->is_done == 1) {
+          DB::rollback();
+          return response()->json([
+            'error' => [
+              'status' => 501,
+              'message' => 'Someone already take action for this request',
+            ]
+          ]);
+        }
+        $getDinasSementara->is_done = 1;
+        $getDinasSementara->done_at = Carbon::now();
+        $getDinasSementara->save();
+
+        $getLeave->masking_status = 'done';
+        $getLeave->save();
+
+        LeaveActivity::logActivityMarkToDone($getLeave->id, $user);
+
+        DB::commit();
+        return ApiResponse::make('Dinas sementara completed successfully', [
+          'leave' => $getLeave,
+          'dinasSementara' => $getDinasSementara,
+        ]);
+      }
+      DB::rollback();
+      return response()->json([
+        'error' => [
+          'status' => 501,
+          'message' => 'Only dinas luar kota and dinas sementara can using this request',
+        ]
+      ]);
+    } catch (\Throwable $th) {
+      DB::rollback();
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+  // khusus dinas luar kota
+  public function butuhAkomodasi(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+    ]);
+    DB::beginTransaction();
+    try {
+      $user = auth()->user();
+      $getLeave = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+        ->where('lt.type_name', 'Dinas Luar Kota')
+        ->where('leaves.id', $request->leave_id)
+        ->selectRaw('leaves.*')
+        ->first();
+      if (!isset($getLeave) && empty($getLeave)) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 404,
+            'message' => 'Data not found',
+          ]
+        ]);
+      }
+      // get child
+      $getDinasLuarKota = LeaveDinasLuarKota::where('leave_id', $getLeave->id)->first();
+      // check just data with status approved can be using this function
+      if (
+        $getDinasLuarKota->is_approved_hrd == 0 || $getDinasLuarKota->is_approved_hrd == null
+      ) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 501,
+            'message' => 'Only approved data can be using this function',
+          ]
+        ]);
+      }
+      if ($getDinasLuarKota->is_done == 1) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 501,
+            'message' => 'Only unfinished request can using this function',
+          ]
+        ]);
+      }
+      if ($getDinasLuarKota->butuh_akomodasi == 1) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 501,
+            'message' => 'You already take action for this request',
+          ]
+        ]);
+      }
+      $getDinasLuarKota->butuh_akomodasi = 1;
+      $getDinasLuarKota->save();
+
+      LeaveActivity::logActivityNeedAccommodation($getLeave->id, $user);
+
+      DB::commit();
+      return ApiResponse::make('Successfully to require accommodation', [
+        'leave' => $getLeave,
+        'getDinasLuarKota' => $getDinasLuarKota,
+      ]);
+    } catch (\Throwable $e) {
+      DB::rollback();
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+  public function createPengeluaran(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+      'nominal' => 'required|numeric',
+      'description' => 'required',
+      'image' => 'required',
+    ]);
+    DB::beginTransaction();
+    try {
+      // get data leave and child
+      $user = auth()->user();
+      $getLeave = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+        ->join('leave_dinas_luar_kotas as ldlk', 'ldlk.leave_id', 'leaves.id')
+        ->where('lt.type_name', 'Dinas Luar Kota')
+        ->where('leaves.id', $request->leave_id)
+        ->selectRaw('leaves.*,ldlk.id as leave_dinas_luar_kota_id,ldlk.is_done,ldlk.is_approved_hrd,ldlk.is_approved_hrd')
+        ->first();
+      if (!isset($getLeave) && empty($getLeave)) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 404,
+            'message' => 'Data not found',
+          ]
+        ]);
+      }
+      // check only approved data can using this function
+      if (
+        $getLeave->is_approved_hrd == 0 || $getLeave->is_approved_hrd == null
+      ) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 501,
+            'message' => 'Only approved data can be using this function',
+          ]
+        ]);
+      }
+
+      // check just leave with status is_done=0 can using this function 
+      if ($getLeave->is_done == 1) {
+        DB::rollback();
+        return response()->json([
+          'error' => [
+            'status' => 501,
+            'message' => 'Only unfinished request can using this function',
+          ]
+        ]);
+      }
+      // insert into leave_pengeluarans
+      $leave_pengeluaran = new LeavePengeluaran;
+      $leave_pengeluaran->leave_dinas_luar_kotas_id = $getLeave->leave_dinas_luar_kota_id;
+      $leave_pengeluaran->nominal = $request->nominal;
+      $leave_pengeluaran->description = $request->description;
+      if ($request->hasFile('image')) {
+        $filename = Files::uploadLocalOrS3($request->image, "user-leaves/$user->id");
+        $leave_pengeluaran->image = public_file("user-leaves/$user->id/$filename");
+      }
+      $leave_pengeluaran->save();
+      DB::commit();
+      return ApiResponse::make('Successfully added expenses', [
+        'leave' => $getLeave,
+        'leave_pengeluaran' => $leave_pengeluaran,
+      ]);
+    } catch (\Throwable $th) {
+      DB::rollback();
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+
+
+  public function getList(APIRequest $request)
+  {
+    $user = auth()->user();
+
+    $getLeaves = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+      ->selectRaw('leaves.*, lt.type_name')
+      ->orderBy('leaves.leave_date', 'desc');
+
+    if (isset($request->start_date) && !empty($request->start_date)) {
+      $getLeaves = $getLeaves->where('leaves.leave_date', '>=', $request->start_date);
+    }
+    if (isset($request->end_date) && !empty($request->end_date)) {
+      $getLeaves = $getLeaves->where('leaves.leave_date', '<=', $request->end_date);
+    }
+    if (isset($request->user_id) && !empty($request->user_id)) {
+      if ($request->user_id == "bawahan") {
+        // check if user was HRD (admin)
+        if (!Leave::checkHRD($user->employeeDetail->department_id)) {
+          $employee = EmployeeDetails::where("permission_require", "LIKE", "%\"" . $user->id . "\"%")->pluck("user_id");
+          $user_id_bawahan = json_decode($employee);
+          //dd($user_id_bawahan);
+          $getLeaves = $getLeaves->whereIn('leaves.user_id', $employee); 
+        }
+      } else {
+        $getLeaves = $getLeaves->where('leaves.user_id', $request->user_id);
+      }
+    }
+    else{
+        $getLeaves = $getLeaves->where('leaves.user_id', $user->id);
+    }
+    if (isset($request->masking_status) && !empty($request->masking_status)) {
+      $getLeaves = $getLeaves->where('leaves.masking_status', $request->masking_status);
+    }
+
+
+    if (isset($request->leave_type_id) && !empty($request->leave_type_id)) {
+      $getLeaves = $getLeaves->where('leave_type_id', $request->leave_type_id);
+    }
+    if (isset($request->limit) && !empty($request->limit)) {
+      $getLeaves = $getLeaves->limit($request->limit);
+    }
+    if (isset($request->offset) && !empty($request->offset)) {
+      $getLeaves = $getLeaves->offset($request->offset);
+    }
+    $getLeaves = $getLeaves->get();
+
+    foreach ($getLeaves as &$getLeave) {
+
+      $getLeave->approved_by_name = $this->data_by_name($getLeave->approved_by);
+      $getLeave->rejected_by_name = $this->data_by_name($getLeave->rejected_by, 'rejected');
+      $getLeave->formated_status =  ucfirst(str_replace('_', ' ', $getLeave->status));
+      $getLeave->user = User::find($getLeave->user_id);
+
+      // set need approval hrd to false
+      $getLeave->need_approval_hrd = false;
+
+      // get child by type leave
+      if ($getLeave->type_name == 'Ijin') {
+        $getChild = LeaveIjin::where('leave_id', $getLeave->id)->first();
+      } elseif ($getLeave->type_name == 'Cuti') {
+        $getChild = LeaveCuti::where('leave_id', $getLeave->id)->first();
+      } elseif ($getLeave->type_name == 'Dinas sementara') {
+        $getChild = LeaveDinasSementara::where('leave_id', $getLeave->id)->first();
+      } elseif ($getLeave->type_name == 'Dinas Luar Kota') {
+        // set need approval hrd to true
+        $getLeave->need_approval_hrd = true;
+
+        $getChild = LeaveDinasLuarKota::where('leave_id', $getLeave->id)->first();
+      }
+      $getLeave->child = $getChild;
+    }
+    return ApiResponse::make('Get users task success', [
+      'leave' => $getLeaves
+    ]);
+  }
+  public function sekretarisAddAccomodation(APIRequest $request)
+  {
+    $request->validate([
+      'leave_id' => 'required',
+      'note' => 'required',
+    ]);
+    $user = auth()->user();
+    // check leave exist
+    $getLeave = Leave::join('leave_types as lt', 'lt.id', 'leaves.leave_type_id')
+      ->where('leaves.id', $request->leave_id)
+      ->selectRaw('leaves.*,lt.type_name')
+      ->first();
+    if (!isset($getLeave) && empty($getLeave)) {
+      return response()->json([
+        'error' => [
+          'status' => 404,
+          'message' => 'Data not found',
+        ]
+      ]);
+    }
+    // check if this login user was sekretaris
+    $getEmployeeDetail = EmployeeDetails::where('user_id', $user->id)->first();
+    // get jabatan
+    $getJabatan = Designation::where('company_id', $getLeave->company_id)
+      ->where('name', 'Sekretaris')
+      ->first();
+    if ($user->company_id != $getLeave->company_id || $getEmployeeDetail->designation_id != $getJabatan->id) {
+      return response()->json([
+        'error' => [
+          'status' => 401,
+          'message' => 'Only sekretaris can using this function',
+        ]
+      ]);
+    }
+    // check if this leave was dinas luar kota
+    if ($getLeave->type_name != 'Dinas Luar Kota') {
+      return response()->json([
+        'error' => [
+          'status' => 501,
+          'message' => 'Only leave id for dinas luar kota that can use this function',
+        ]
+      ]);
+    }
+    // get child
+    $getChild = LeaveDinasLuarKota::where('leave_id', $getLeave->id)
+      ->first();
+
+    // check if this data butuh_akomodasi == 1
+    if ($getChild->butuh_akomodasi != 1) {
+      return response()->json([
+        'error' => [
+          'status' => 501,
+          'message' => 'Only data that requires accommodation can use this function',
+        ]
+      ]);
+    }
+    DB::beginTransaction();
+    try {
+      $model = new LeaveAccomodation;
+      $model->leave_dinas_luar_kotas_id = $getChild->id;
+      $model->note = $request->note;
+      if (isset($request->file) && !empty($request->file)) {
+        $filename = Files::uploadLocalOrS3($request->file, "user-leaves/$user->id");
+        $model->file = public_file("user-leaves/$user->id/$filename");
+      }
+      $model->created_by = $user->id;
+      $model->save();
+      DB::commit();
+      return ApiResponse::make('Successfully added accomodations', [
+        'leave' => $getLeave,
+        'accomodation' => $model,
+      ]);
+    } catch (\Throwable $th) {
+      DB::rollback();
+      return response()->json([
+        'error' => [
+          'status' => 500,
+          'message' => 'Internal server error',
+        ]
+      ]);
+    }
+  }
+  public function checkMyLeave(APIRequest $request)
+  {
+    $user = auth()->user();
+    $now = Carbon::now()->format('Y-m-d');
+    // get leave where status approved_atasan_satu (temporary) (final)
+    $getLeaveToday = Leave::join('leave_types as lt', 'leaves.leave_type_id', 'lt.id')
+      ->where('leaves.user_id', $user->id)
+      //->where('status','approved_atasan_tiga')
+      ->whereNotIn('status',['pending','rejected_atasan_satu','rejected_atasan_dua','rejected_atasan_tiga'])
+      ->selectRaw('leaves.*,lt.type_name')
+      ->get();
+    // check if dinas sementara
+    foreach ($getLeaveToday as $key => &$val) {
+      if ($now >= $val->leave_date->format('Y-m-d') && $now <= $val->leave_date_end->format('Y-m-d')) {
+        // okey
+        // temporaray didnt need to check
+        // if ($val->type_name == 'Dinas Luar Kota') {
+        //   // check dinas luar kota
+        //   $checkDinas = LeaveDinasLuarKota::where('leave_id', $val->id)
+        //     ->where('is_approved_hrd', 0)
+        //     ->count();
+        //   if ($checkDinas > 0) {
+        //     // data rejected
+        //     unset($getLeaveToday[$key]);
+        //   }
+        // }
+        // else if($val->type_name == 'Dinas sementara'){
+        //   $checkDinas = LeaveDinasSementara::where('leave_id', $val->id)->first();
+        //   $datetime_start = date("Y-m-d H:i", strtotime(date("Y-m-d", strtotime($val->leave_date))." ".$checkDinas->start_hour));
+        //   $datetime_end = date("Y-m-d H:i", strtotime(date("Y-m-d", strtotime($val->leave_date_end))." ".$checkDinas->end_hour));
+        //   //dd($val->leave_date." ".$checkDinas->start_hour);
+        //   $timeNow = date("Y-m-d H:i", strtotime("NOW +7 Hours"));
+        //   $ijinAktif = false;
+        //   if($timeNow >= $datetime_start && $timeNow <= $datetime_end){
+        //     $ijinAktif = true;
+        //   }
+        //   $val->start_hour = $checkDinas->start_hour;
+        //   $val->end_hour = $checkDinas->end_hour;
+        //   if(!$ijinAktif){
+        //     unset($getLeaveToday[$key]);
+        //   }
+        // }
+        if($val->type_name == 'Dinas sementara'){
+            $checkDinas = LeaveDinasSementara::where('leave_id', $val->id)->first();
+            $datetime_start = date("Y-m-d H:i", strtotime(date("Y-m-d", strtotime($val->leave_date))." ".$checkDinas->start_hour));
+            $datetime_end = date("Y-m-d H:i", strtotime(date("Y-m-d", strtotime($val->leave_date_end))." ".$checkDinas->end_hour));
+            //dd($val->leave_date." ".$checkDinas->start_hour);
+            $timeNow = date("Y-m-d H:i", strtotime("NOW +7 Hours"));
+            $ijinAktif = false;
+            if($timeNow >= $datetime_start && $timeNow <= $datetime_end){
+              $ijinAktif = true;
+            }
+            $val->start_hour = $checkDinas->start_hour;
+            $val->end_hour = $checkDinas->end_hour;
+            if(!$ijinAktif){
+              unset($getLeaveToday[$key]);
+            }
+        }
+      }
+    }
+    $have_leave = false;
+    if (count($getLeaveToday)> 0) {
+      $have_leave = true;
+      // $getLeaveToday =  $getLeaveToday->first();
+      // param need type_name
+      $this->getChildLeave($getLeaveToday);
+    }
+    
+    return ApiResponse::make('My leave list', [
+      'have_leave' => $have_leave,
+      'leave' => $getLeaveToday->values(),
+    ]);
+  }
+  public function getChildLeave($getLeaves){
+    $getChild = null;
+    foreach ($getLeaves as $getLeave) {
+      // get child by type leave
+      if ($getLeave->type_name == 'Ijin') {
+        $getChild = LeaveIjin::where('leave_id', $getLeave->id)->first();
+        if (isset($getChild->surat_keterangan_sakit) && !empty($getChild->surat_keterangan_sakit)) {
+          $getChild->surat_keterangan_sakit = url($getChild->surat_keterangan_sakit);
+        } else {
+          $getChild->surat_keterangan_sakit = null;
+        }
+      } elseif ($getLeave->type_name == 'Cuti') {
+        /*
+        $getChild = LeaveCuti::leftJoin('tipe_cutis as tc', 'tc.id', 'leave_cutis.kategori_cuti')
+          ->where('leave_cutis.leave_id', $getLeave->id)
+          ->where('tc.company_id', $getLeave->company_id)
+          ->selectRaw('leave_cutis.*,tc.name as tipe_cuti')
+          ->first();
+          */
+        
+        $getChild = LeaveCuti::where('leave_id', $getLeave->id)->first();
+      } elseif ($getLeave->type_name == 'Dinas sementara') {
+        $getChild = LeaveDinasSementara::where('leave_id', $getLeave->id)->first();
+      } elseif ($getLeave->type_name == 'Dinas Luar Kota') {
+        $getChild = LeaveDinasLuarKota::where('leave_id', $getLeave->id)->first();
+      }
+    }
+    $getLeave->child = $getChild;
+  }
+}

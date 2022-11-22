@@ -1,0 +1,53 @@
+@extends('layouts.app')
+
+@push('head-script')
+<style>
+    .fc-event{
+        font-size: 10px !important;
+    }
+    #calendar .fc-view-container .fc-view .fc-more-popover{
+        top: 136px !important;
+        left: 105px !important;
+    }
+</style>
+@endpush
+@section('page-title')
+
+
+@endsection
+
+@push('head-script')
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/calendar/dist/fullcalendar.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/morrisjs/morris.css') }}"><!--Owl carousel CSS -->
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/owl.carousel/owl.carousel.min.css') }}"><!--Owl carousel CSS -->
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/owl.carousel/owl.theme.default.css') }}"><!--Owl carousel CSS -->
+
+<style>.col-in {
+    padding: 0 20px !important;
+
+}
+
+.fc-event {
+    font-size: 10px !important;
+}
+
+@media (min-width: 769px) {
+    #wrapper .panel-wrapper {
+        height: 530px;
+        overflow-y: auto;
+    }
+}
+
+</style>
+@endpush
+
+@section('content')
+
+@endsection
+
+
+@push('footer-script')
+
+@endpush
+
