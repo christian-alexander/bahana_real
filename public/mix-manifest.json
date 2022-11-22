@@ -1,0 +1,11 @@
+{
+    "/js/laravel-mix/jquery.min.js": "/js/laravel-mix/jquery.min.js",
+    "/js/laravel-mix/scripts.bundle.js": "/js/laravel-mix/scripts.bundle.js",
+    "/js/laravel-mix/select2.js": "/js/laravel-mix/select2.js",
+    "/js/laravel-mix/dashboard.js": "/js/laravel-mix/dashboard.js",
+    "/js/laravel-mix/signature_pad.umd.js": "/js/laravel-mix/signature_pad.umd.js",
+    "/js/laravel-mix/app.js": "/js/laravel-mix/app.js",
+    "/css/laravel-mix/style.bundle.css": "/css/laravel-mix/style.bundle.css",
+    "/css/laravel-mix/plugins.bundle.css": "/css/laravel-mix/plugins.bundle.css",
+    "/css/laravel-mix/fullcalendar.bundle.css": "/css/laravel-mix/fullcalendar.bundle.css"
+}

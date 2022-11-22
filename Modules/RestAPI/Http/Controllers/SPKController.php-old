@@ -1,0 +1,245 @@
+<?php
+
+namespace Modules\RestAPI\Http\Controllers;
+
+use Froiden\RestAPI\ApiResponse;
+use App\Http\Requests\API\APIRequest;
+use App\SPK;
+use App\SPKApproval;
+use App\SPKDetail;
+use App\SPKPerformance;
+use App\TipeCuti;
+use Illuminate\Support\Facades\DB;
+
+class SPKController extends ApiBaseController
+{
+    public function getList(APIRequest $request)
+    {
+        $user = auth()->user();
+
+        $getSPK = SPK::join('users as u','u.id','spk.user_id')
+        ->selectRaw('spk.*,u.name as user_name');
+        if (isset($request->user_id) && !empty($request->user_id)) {
+            if ($request->user_id == "bawahan") {
+              // do nothing
+            } else {
+              $getSPK = $getSPK->where('spk.user_id', $request->user_id);
+            }
+          }
+        if (isset($request->limit) && !empty($request->limit)) {
+            $getSPK = $getSPK->limit($request->limit);
+        }
+        if (isset($request->offset) && !empty($request->offset)) {
+            $getSPK = $getSPK->offset($request->offset);
+        }
+        $getSPK = $getSPK->get();
+        return ApiResponse::make('Get spk success', [
+            'spk' => $getSPK
+        ]);
+    }
+    public function getDetail(APIRequest $request)
+    {
+        $request->validate([
+            'spk_id' => 'required',
+            ]);
+
+        $user = auth()->user();
+
+        $model = new SPK;
+
+        $getSPK = SPK::with([
+          'details',
+          'approval'=>function($query){
+              $query->leftjoin('users as u','u.id','spk_approval.approved_by')
+              ->leftjoin('users as u2','u2.id','spk_approval.rejected_by')
+              ->select('spk_approval.*','u.name as approved_by_name','u2.name as rejected_by_name')
+              ->orderBy('spk_approval.created_at','DESC');
+          },
+          'approval.rejected_by',
+          'performance'
+        ])->join('users as u','u.id','spk.user_id')
+            ->where('spk.id', $request->spk_id)
+            ->selectRaw('spk.*,u.name as user_name')
+            ->first();
+        if (!isset($getSPK) && empty($getSPK)) {
+            return response()->json([
+                'error' => [
+                  'status' => 404,
+                  'message' => 'SPK not found',
+                ]
+              ]);
+        }
+
+        // set can_approve to 0 its mean no one can approve
+        $getSPK->can_approve = 0;
+
+        // check login user have permission to approve
+        // check  status approval
+        $check_approval_status = SPKApproval::where('spk_id', $getSPK)->orderBy('updated_at','DESC')->first();
+        if (!isset($check_approval_status) && empty($check_approval_status)) {
+            // jika kosong maka ini adalah approval ke 1
+            // check user yang login punya akses untuk approve
+            if($model->have_permission($user, 'is_nahkoda')){
+                $getSPK->can_approve = 1;
+            }
+        }elseif($check_approval_status->status=='approved_1'){
+            // ini menunggu approval ke 2
+            if($model->have_permission($user, 'is_admin')){
+                $getSPK->can_approve = 1;
+            }
+        }elseif($check_approval_status->status=='approved_2'){
+            // ini menunggu approval ke 3
+            if($model->have_permission($user, 'is_manager')){
+                $getSPK->can_approve = 1;
+            }
+        }elseif($check_approval_status->status=='approved_3'){
+            // untuk sementara ini udah final, gak ada approval selanjutnya
+        }else{
+            // selain if diatas berati adalah di reject
+        }
+
+        return ApiResponse::make('Get spk success', [
+            'spk' => $getSPK
+        ]);
+    }
+    
+    public function approve(APIRequest $request){
+        $request->validate([
+          'spk_id' => 'required',
+        ]);
+        try {
+          $approve = SPK::approve($request->all());
+          $msg = $approve['msg'];
+          if (!$approve['success']) {
+            return response()->json([
+              'error' => [
+                'status' => 500,
+                'message' => $msg,
+              ]
+            ]);
+          }
+          return ApiResponse::make($msg,[
+            "data_approved"=>$approve['data']
+            ]);
+        } catch (\Throwable $e) {
+          return response()->json([
+            'error' => [
+              'status' => 500,
+              'message' => 'Internal server error',
+            ]
+          ]);
+        }
+    }
+    public function reject(APIRequest $request){
+        $request->validate([
+          'spk_id' => 'required',
+        ]);
+        try {
+          $reject = SPK::reject($request->all());
+          $msg = $reject['msg'];
+          if (!$reject['success']) {
+            return response()->json([
+              'error' => [
+                'status' => 500,
+                'message' => $msg,
+              ]
+            ]);
+          }
+          return ApiResponse::make($msg,[
+            "data_rejected"=>$reject['data']
+            ]);
+        } catch (\Throwable $e) {
+          return response()->json([
+            'error' => [
+              'status' => 500,
+              'message' => 'Internal server error',
+            ]
+          ]);
+        }
+    }
+    public function changeProductEtc(APIRequest $request){
+      $request->validate([
+        'spk_detail_id' => 'required',
+        'barang_id' => 'required',
+      ]);
+      $change = SPKDetail::changeProductEtc($request->all());
+      $msg = $change['msg'];
+      if (!$change['success']) {
+        return response()->json([
+          'error' => [
+            'status' => 500,
+            'message' => $msg,
+          ]
+        ]);
+      }
+      return ApiResponse::make($msg,[
+        "data_barang"=>$change['data']
+      ]);
+    }
+    public function ratePerformance(APIRequest $request){
+      $request->validate([
+        'spk_id' => 'required',
+        'alasan' => 'required',
+        'point' => 'required',
+      ]);
+      $rate = SPKPerformance::ratePerformance($request->all());
+      $msg = $rate['msg'];
+      if (!$rate['success']) {
+        return response()->json([
+          'error' => [
+            'status' => 500,
+            'message' => $msg,
+          ]
+        ]);
+      }
+      return ApiResponse::make($msg,[
+        "data_performa"=>$rate['data']
+      ]);
+    }
+    public function changeQty(APIRequest $request){
+      $request->validate([
+        'spk_detail_id' => 'required',
+        'qty' => 'required',
+      ]);
+      $rate = SPKDetail::changeQty($request->all());
+      $msg = $rate['msg'];
+      if (!$rate['success']) {
+        return response()->json([
+          'error' => [
+            'status' => 500,
+            'message' => $msg,
+          ]
+        ]);
+      }
+      return ApiResponse::make($msg,[
+        "data_performa"=>$rate['data']
+      ]);
+    }
+    public function historyBarang(APIRequest $request){
+      $request->validate([
+        'barang_id' => 'required',
+      ]);
+      $user = auth()->user();
+      // only admin can using this function
+      if(!SPK::have_permission($user, 'is_manager')){
+          throw new \Exception("You dont have permission to using this function");
+      }
+      $getData = SPKDetail::with(['spk'])->where('barang_id',$request->barang_id);
+      if (isset($request->start_date) && !empty($request->start_date)) {
+        $getData = $getData->whereDate('created_at','>=',$request->start_date);
+      }
+      if (isset($request->end_date) && !empty($request->end_date)) {
+        $getData = $getData->whereDate('created_at','<=',$request->end_date);
+      }
+      if (isset($request->limit) && !empty($request->limit)) {
+        $getData = $getData->limit($request->limit);
+      }
+      if (isset($request->offset) && !empty($request->offset)) {
+          $getData = $getData->offset($request->offset);
+      }
+      $getData = $getData->get();
+      return ApiResponse::make('Get history barang success', [
+          'barang' => $getData
+      ]);
+    }
+}

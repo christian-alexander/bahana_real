@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Cabang;
+use App\ClusterWorkingHour;
+use App\EmployeeDetails;
+use App\Helper\Reply;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Http\Requests\ClusterWorkingHour\StoreRequest;
+use App\Http\Requests\ClusterWorkingHour\UpdateRequest;
+use App\Office;
+
+class ClusterWorkingHourController extends AdminBaseController
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->pageTitle = __('app.menu.cluster_working_hour');
+        $this->pageIcon = 'icon-layers';
+        $this->middleware(function ($request, $next) {
+            if (!in_array('employees', $this->user->modules)) {
+                abort(403);
+            }
+            return $next($request);
+        });
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $this->office = ClusterWorkingHour::get();
+        return view('admin.cluster-working-hour.index', $this->data);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('admin.cluster-working-hour.create', $this->data);
+    }
+
+
+    /**
+     * @param StoreRequest $request
+     * @return array
+     */
+    public function store(StoreRequest $request)
+    {
+        $office = new ClusterWorkingHour();
+        $office->name = $request->cluster_name;
+        $office->start_hour = $request->start_hour;
+        $office->end_hour = $request->end_hour;
+        $office->save();
+
+        return Reply::redirect(route('admin.cluster-working-hour.index'), 'Data created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     *[
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $this->clusterWorkingHour = ClusterWorkingHour::findOrFail($id);
+        return view('admin.cluster-working-hour.edit', $this->data);
+    }
+
+    /**
+     * @param UpdateRequest $request
+     * @param $id
+     * @return array
+     */
+    public function update(UpdateRequest $request, $id)
+    {
+        $office = ClusterWorkingHour::find($id);
+        $office->name = $request->cluster_name;
+        $office->start_hour = $request->start_hour;
+        $office->end_hour = $request->end_hour;
+        $office->save();
+
+        return Reply::redirect(route('admin.cluster-working-hour.index'), __('messages.updatedSuccessfully'));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        ClusterWorkingHour::destroy($id);
+        return Reply::dataOnly(['status' => 'success']);
+    }
+}

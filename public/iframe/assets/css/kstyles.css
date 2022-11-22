@@ -1,0 +1,89 @@
+.ta-center {
+  text-align:center;
+}
+
+.border-0 {
+  border:0;
+}
+
+.m-top-20 {
+  margin-top: 20px;
+}
+
+.m-left-105 {
+  margin-left:105px;
+}
+.m-left-95 {
+  margin-left: 95px;
+}
+.m-left-44 {
+  margin-left: 44px;
+}
+.m-left-40 {
+  margin-left: 40px;
+}
+.m-left-30 {
+  margin-left: 30px;
+}
+.m-left-29 {
+  margin-left:29px;
+}
+.m-left-25 {
+  margin-left: 25px;
+}
+.m-left-20 {
+  margin-left: 20px;
+}
+.m-left-16 {
+  margin-left: 16px;
+}
+.m-left-10 {
+  margin-left: 10px;
+}
+
+.m-right-100 {
+  margin-right: -100px;
+}
+.m-right-80 {
+  margin-right: -80px;
+}
+.m-right-70 {
+  margin-right: -70px;
+}
+.m-right-50 {
+  margin-right: -50px;
+}
+.m-right-20 {
+  margin-right:20px;
+}
+.m-right-15 {
+  margin-right:15px;
+}
+.m-right-10 {
+  margin-right:10px;
+}
+
+.fr {
+  float:right;
+}
+
+.table th:nth-child(1n) {
+  vertical-align: middle;
+}
+.table td:nth-child(1n) {
+  vertical-align: middle;
+}
+
+div.dataTables_wrapper {
+  margin: 0 auto;
+}
+
+.margin-auto {
+  margin: 0 auto;
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: red;
+}
