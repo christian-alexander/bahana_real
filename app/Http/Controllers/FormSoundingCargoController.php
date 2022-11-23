@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
+use App\FormSoundingCargo;
+use App\FormSoundingOob;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -14,7 +16,7 @@ class FormSoundingCargoController extends Controller
     public function save(Request $request){
         
         $current_timestamp = Carbon::now();
-        $flight = new form_sounding_cargo;
+        $flight = new FormSoundingCargo;
  
         $flight->no_sounding_cargo = $request->no_form;
         $flight->tannggal = $request->date;
@@ -32,7 +34,7 @@ class FormSoundingCargoController extends Controller
  
         $flight->save();
  
-        $oob = new form_sounding_oob;
+        $oob = new FormSoundingOob;
 
         $oob->no_sounding_oob = 1;
         $oob->tinggi_cairan = $request->ketinggian2;
