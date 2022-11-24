@@ -1492,6 +1492,9 @@ Route::group(['middleware' => 'auth'], function () {
 Route::get('/form-sounding-cargo', 'FormSoundingCargoController@show');
 Route::post('/form-sounding-cargo', 'FormSoundingCargoController@save');
 
+Route::get('/form-audit-kondisi-kapal/user/{user_id}', 'FormAuditKondisiKapalController@show');
+Route::post('/form-audit-kondisi-kapal', 'FormAuditKondisiKapalController@save');
+
 Route::get('/form-audit-tanki/user/{user_id}', 'FormAuditTankiController@show');
 Route::post('/form-audit-tanki', 'FormAuditTankiController@save');
 
