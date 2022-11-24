@@ -1487,12 +1487,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
+// FORM BIC
+
 Route::get('/form-sounding-cargo', 'FormSoundingCargoController@show');
 Route::post('/form-sounding-cargo', 'FormSoundingCargoController@save');
 
+Route::get('/form-audit-tanki/user/{user_id}', 'FormAuditTankiController@show');
+Route::post('/form-audit-tanki', 'FormAuditTankiController@save');
+
 Route::get('/form-audit-kas-cabang', 'FormAuditKasCabangController@show');
 Route::post('/form-audit-kas-cabang', 'FormAuditKasCabangController@save');
-// FORM BIC
-Route::get('/form-audit-tanki', 'FormAuditTankiController@show');
-Route::post('/form-audit-tanki', 'FormAuditTankiController@save');
 

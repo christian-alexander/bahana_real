@@ -14,7 +14,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Form Audit Kondisi Tanki</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action='form-audit-tanki'>
+    <form method="post" action='/form-audit-tanki'>
         @csrf
         <input type="hidden" name="start_at" value="2022-11-18 09:00:00">
         <input type="hidden" name="stop_at" value="2022-11-18 09:00:00">
@@ -36,18 +36,15 @@
         </div> 
         <label for="auditor" class="col-4 col-form-label"> Nama Auditor</label>
         <div class="form-group"> 
-            <select id="auditor" name="user_id" class="custom-select">
-                <option value="1">SURAHMAN</option>
-                <option value="2">NURHADI</option>
-                <option value="3">ERI</option>
-            </select>
+            <input type="hidden" name="user_id" value="{{ $user->id }}">
+            <input type="text" value='{{ $user->name }}' class='form-control' disabled>
         </div>
         <label for="office_id" class="col-4 col-form-label">Nama Kapal</label>
         <div class="form-group"> 
             <select id="office_id" name="office_id" class="custom-select">
-                <option value="1">KAPAL 1</option>
-                <option value="2">KAPAL 2</option>
-                <option value="3">KAPAL 3</option>
+                @foreach ($offices as $office)
+                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                @endforeach
             </select>
         </div>
         <label for="posisi" class="col-4 col-form-label">Posisi</label>
