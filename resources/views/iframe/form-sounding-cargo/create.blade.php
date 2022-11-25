@@ -15,7 +15,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Sounding Cargo</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="form-sounding-cargo">
+    <form method="post" action="/form-sounding-cargo">
         @csrf
         @php
             use Carbon\Carbon;
@@ -40,14 +40,15 @@
         </div> 
         <label for="auditor" class="col-4 col-form-label"> Nama Auditor</label>
         <div class="form-group"> 
-            <input id="auditor" name="auditor" placeholder="Auditor Name" type="text" class="form-control" required>
+            <input type="hidden" name="user_id" value="{{ $user->id }}">
+            <input type="text" value='{{ $user->name }}' class='form-control' disabled>
         </div>
         <label for="kapal" class="col-4 col-form-label">Nama Kapal</label>
         <div class="form-group"> 
             <select id="kapal" name="kapal" class="custom-select">
-                <option value="1">1</option>
-                <option value="0">0</option>
-                <option value="0">0</option>
+                @foreach ($offices as $office)
+                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                @endforeach
             </select>
         </div>
         <label for="textarea" class="col-4 col-form-label">Posisi</label>
