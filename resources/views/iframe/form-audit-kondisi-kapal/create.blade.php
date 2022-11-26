@@ -68,13 +68,14 @@
             <button type="submit" class="btn btn-primary">Simpan Laporan</button>
         </div>
     </form>
+    <script>
+        function get_time_now(){
+            alert("waktu pengisian form telah dimulai");
+            let ms = Math.floor(Date.now() / 1000);
+            document.getElementById("start_at").value = ms;
+        }
+    </script>
 </body>
 
-<script>
-    function get_time_now(){
-        let ms = Math.floor(Date.now() / 1000);
-        document.getElementById("start_at").value = ms;
-    }
-</script>
 
 </html>

@@ -16,8 +16,7 @@
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
     <form method="post" action='/form-audit-tanki/create' enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="start_at" value="2022-11-18 09:00:00">
-        <input type="hidden" name="stop_at" value="2022-11-18 09:00:00">
+        <input type="hidden" name="start_at" value="{{ time() }}">
         <input type="hidden" name="foto" value="foto">
         <label for="no-form" class="col-4 col-form-label">No Form</label>
         <div class="form-group"> 
@@ -68,6 +67,15 @@
             <button type="submit" class="btn btn-primary">Simpan Laporan</button>
         </div>
     </form>
+
+    <script>
+        function get_time_now(){
+            alert("waktu pengisian form telah dimulai");
+            let ms = Math.floor(Date.now() / 1000);
+            document.getElementById("start_at").value = ms;
+        }
+    </script>
+
 </body>
 
 </html>

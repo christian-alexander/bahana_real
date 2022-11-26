@@ -23,7 +23,6 @@ class FormAuditKondisiKapalController extends Controller
     }
 
     public function save(Request $request){
-        dd(date('Y-m-d H:i:s',$request->start_at));
         if (isset($request->foto) && !empty($request->foto)) {
             $filename = Files::uploadLocalOrS3($request->foto, "form-audit-kondisi-kapal/$request->user_id");
             $foto = "user-uploads/form-audit-kondisi-kapal/$request->user_id/$filename";
