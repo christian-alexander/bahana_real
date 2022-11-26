@@ -17,8 +17,7 @@
     <form method="post" action="/form-audit-kas-cabang">
         @csrf
         @php
-        use Carbon\Carbon;
-        $current_timestamp = Carbon::now();
+        $current_timestamp = Carbon\Carbon::now();
         @endphp
         <input id="start" name="start_at" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
         <label for="no-form" class="col-4 col-form-label">No Form</label>

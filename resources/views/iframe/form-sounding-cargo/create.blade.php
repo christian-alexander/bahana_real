@@ -18,8 +18,7 @@
     <form method="post" action="/form-sounding-cargo">
         @csrf
         @php
-            use Carbon\Carbon;
-            $current_timestamp = Carbon::now();
+            $current_timestamp = Carbon\Carbon::now();
         @endphp
         <input id="start" name="start" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
 
