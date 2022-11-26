@@ -25,14 +25,9 @@
         </div>
         <label for="date" class="col-4 col-form-label">Tanggal</label>
         <div class="form-group"> 
-            <div class="input-group">
-                <input id="date" name="tanggal" type="date" class="form-control"> 
-                <div class="input-group-append">
-                    <div class="input-group-text">
-                        <i class="fa fa-calendar"></i>
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="tanggal" value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}">
+            <input type="text" class='form-control' value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}" disabled>
+        </div>
         </div> 
         <label for="auditor" class="col-4 col-form-label"> Nama Auditor</label>
         <div class="form-group"> 

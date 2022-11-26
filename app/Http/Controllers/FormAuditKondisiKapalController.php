@@ -15,6 +15,8 @@ class FormAuditKondisiKapalController extends Controller
         $data['user'] = User::find($user_id);
         $data['offices'] = Office::where('is_kapal',1)->get();
 
+        if($data['user'] == NULL){ dd('user tidak ditemukan'); }
+
         return view('iframe/form-audit-kondisi-kapal/create',$data);
     }
 
