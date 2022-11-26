@@ -15,7 +15,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Sounding Cargo</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="/form-sounding-cargo">
+    <form method="post" action="/form-sounding-cargo/create">
         @csrf
         @php
             $current_timestamp = Carbon\Carbon::now();
