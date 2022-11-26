@@ -16,8 +16,7 @@
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
     <form method="post" action='/form-audit-kondisi-kapal/create' enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="start_at" value="2022-11-18 09:00:00">
-        <input type="hidden" name="stop_at" value="2022-11-18 09:00:00">
+        <input type="hidden" name="start_at" id='start_at' value="{{ time() }}">
         <input type="hidden" name="foto" value="foto">
         <label for="no-form" class="col-4 col-form-label">No Form</label>
         <div class="form-group"> 
@@ -65,10 +64,17 @@
         </div>
         <div class="form-group">
             <button name="save-as" type="button" class="btn btn-primary">Save As</button>
-            <button type="button" class="btn btn-primary">Start</button>
+            <button type="button" class="btn btn-primary" onclick="get_time_now()">Start</button>
             <button type="submit" class="btn btn-primary">Simpan Laporan</button>
         </div>
     </form>
 </body>
+
+<script>
+    function get_time_now(){
+        let ms = Math.floor(Date.now() / 1000);
+        document.getElementById("start_at").value = ms;
+    }
+</script>
 
 </html>

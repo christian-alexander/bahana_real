@@ -8,6 +8,7 @@ use App\Office;
 use App\Helper\Files;
 use Illuminate\Http\Request;
 use App\FormAuditKondisiKapal;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 
 class FormAuditKondisiKapalController extends Controller
@@ -22,6 +23,7 @@ class FormAuditKondisiKapalController extends Controller
     }
 
     public function save(Request $request){
+        dd(date('Y-m-d H:i:s',$request->start_at));
         if (isset($request->foto) && !empty($request->foto)) {
             $filename = Files::uploadLocalOrS3($request->foto, "form-audit-kondisi-kapal/$request->user_id");
             $foto = "user-uploads/form-audit-kondisi-kapal/$request->user_id/$filename";
@@ -33,8 +35,8 @@ class FormAuditKondisiKapalController extends Controller
             'no_form' => $request->no_form,
             'tanggal' => $request->tanggal,
             'posisi' => $request->posisi,
-            'start_at' => $request->start_at,
-            'stop_at' => $request->stop_at,
+            'start_at' => date('Y-m-d H:i:s',$request->start_at),
+            'stop_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'catatan' => $request->catatan,
             'foto' => $foto,
             'temuan' => $request->temuan,
