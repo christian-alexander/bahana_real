@@ -57,7 +57,7 @@
         <label for="temuan" class="col-4 col-form-label">Temuan</label>
         <div class="form-group"> 
             <textarea id="temuan" name="temuan" cols="40" rows="5" class="form-control"></textarea>
-            <button name="tambah-temuan" type="submit" class="btn btn-primary" style="margin-top: 5px;">+</button>
+            {{-- <button name="tambah-temuan" type="submit" class="btn btn-primary" style="margin-top: 5px;">+</button> --}}
         </div>
         <label for="ttd" class="col-4 col-form-label">Kolom Tanda Tangan</label>
         <div class="form-group"> 
