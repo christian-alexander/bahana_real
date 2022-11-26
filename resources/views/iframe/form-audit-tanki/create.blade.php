@@ -14,7 +14,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Form Audit Kondisi Tanki</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action='/form-audit-tanki/create'>
+    <form method="post" action='/form-audit-tanki/create' enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="start_at" value="2022-11-18 09:00:00">
         <input type="hidden" name="stop_at" value="2022-11-18 09:00:00">
@@ -51,14 +51,7 @@
         </div>
         <label for="text1" class="col-4 col-form-label">Upload Foto</label>
         <div class="form-group"> 
-            <div class="input-group">
-                <input id="text1" name="text1" type="text" class="form-control"> 
-                <div class="input-group-append">
-                    <div class="input-group-text">
-                        <i class="fa fa-photo"></i>
-                    </div>
-                </div>
-            </div>
+            <input type="file" name="foto" class="form-control" accept="image/*">
         </div>
         <label for="temuan" class="col-4 col-form-label">Temuan</label>
         <div class="form-group"> 

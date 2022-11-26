@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 
 use App\Office;
+use App\Helper\Files;
 use App\FormAuditTanki;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -21,6 +22,11 @@ class FormAuditTankiController extends Controller
     }
 
     public function save(Request $request){
+        if (isset($request->foto) && !empty($request->foto)) {
+            $filename = Files::uploadLocalOrS3($request->foto, "form-audit-tanki/$request->user_id");
+            $foto = "user-uploads/form-audit-tanki/$request->user_id/$filename";
+        }
+
         FormAuditTanki::create([
             'user_id' => $request->user_id,
             'office_id' => $request->office_id,
@@ -30,7 +36,7 @@ class FormAuditTankiController extends Controller
             'start_at' => $request->start_at,
             'stop_at' => $request->stop_at,
             'catatan' => $request->catatan,
-            'foto' => $request->foto,
+            'foto' => $foto,
             'temuan' => $request->temuan,
             'ttd' => $request->ttd,
         ]);
