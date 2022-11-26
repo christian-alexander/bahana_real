@@ -14,7 +14,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Form Audit Kas Cabang</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="form-audit-kas-cabang">
+    <form method="post" action="/form-audit-kas-cabang">
         @csrf
         @php
         use Carbon\Carbon;
@@ -23,7 +23,7 @@
         <input id="start" name="start_at" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
         <label for="no-form" class="col-4 col-form-label">No Form</label>
         <div class="form-group"> 
-            <input id="no-form" name="no-form" placeholder="No Form" type="text" class="form-control">
+            <input id="no-form" name="no_form" placeholder="No Form" type="text" class="form-control">
         </div>
         <label for="date" class="col-4 col-form-label">Tanggal</label>
         <div class="form-group"> 
@@ -38,14 +38,15 @@
         </div> 
         <label for="auditor" class="col-4 col-form-label"> Nama Auditor</label>
         <div class="form-group"> 
-            <input id="auditor" name="auditor" placeholder="Auditor Name" type="text" class="form-control">
+            <input type="hidden" name="user_id" value="{{ $user->id }}">
+            <input type="text" value='{{ $user->name }}' class='form-control' disabled>
         </div>
         <label for="lokasi-cabang" class="col-4 col-form-label">Lokasi Cabang</label>
         <div class="form-group"> 
-            <select id="lokasi-cabang" name="lokasi-cabang" class="custom-select">
-                <option value="kapal1">Kapal1</option>
-                <option value="kapal2">Kapal2</option>
-                <option value="kapal3">Kapal3</option>
+            <select id="lokasi-cabang" name="lokasi_cabang" class="custom-select">
+                @foreach ($offices as $office)
+                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                @endforeach
             </select>
         </div> 
         <label for="posisi" class="col-4 col-form-label">Posisi</label>
