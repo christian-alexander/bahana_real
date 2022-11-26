@@ -24,7 +24,7 @@
         </div>
         <label for="date" class="col-4 col-form-label">Tanggal</label>
         <div class="form-group"> 
-            <input type="hidden" name="tanggal" value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}">
+            <input type="hidden" name="tanggal" value="{{ Carbon\Carbon::now()->translatedFormat('Y-m-d') }}">
             <input type="text" class='form-control' value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}" disabled>
         </div>
         </div> 
