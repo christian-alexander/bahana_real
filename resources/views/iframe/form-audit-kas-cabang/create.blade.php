@@ -14,7 +14,7 @@
 <body>
     <h2><label for="sounding-cargo" class="col-4 col-form-label">Form Audit Kas Cabang</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="/form-audit-kas-cabang/create">
+    <form method="post" action="/form-audit-kas-cabang/create" enctype="multipart/form-data">
         @csrf
         @php
         $current_timestamp = Carbon\Carbon::now();
@@ -53,7 +53,7 @@
         <label for="text1" class="col-4 col-form-label">Upload Foto</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="text1" name="foto" type="text" class="form-control"> 
+                <input id="text1" name="foto" type="file" class="form-control"> 
                 <div class="input-group-append">
                     <div class="input-group-text">
                         <i class="fa fa-photo"></i>
@@ -72,8 +72,16 @@
         </div>
         <div class="form-group">
             <button name="save-as" type="button" class="btn btn-primary">Save As</button>
-            <button name="start" type="button" class="btn btn-primary">Start</button>
+            <button type="button" class="btn btn-primary" onclick="get_time_now()">Start</button>
             <button name="stop" type="submit" class="btn btn-primary">Simpan Laporan</button>
         </div>
     </form>
+
+    <script>
+        function get_time_now(){
+            alert("waktu pengisian form telah dimulai");
+            let ms = Math.floor(Date.now() / 1000);
+            document.getElementById("start").value = ms;
+        }
+    </script>
 </body>

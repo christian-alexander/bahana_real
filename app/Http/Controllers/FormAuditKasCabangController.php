@@ -7,6 +7,7 @@ use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Helper\Files;
 
 class FormAuditKasCabangController extends Controller
 {
@@ -21,6 +22,12 @@ class FormAuditKasCabangController extends Controller
 
 
     public function save(Request $request){
+
+        if (isset($request->foto) && !empty($request->foto)) {
+            $filename = Files::uploadLocalOrS3($request->foto, "form-audit-kas-cabang/$request->user_id");
+            $foto = "user-uploads/form-audit-kas-cabang/$request->user_id/$filename";
+        }
+
         $current_timestamp = Carbon::now();
         FormAuditKasCabang::create([
             'no_form' => $request->no_form,
@@ -31,7 +38,7 @@ class FormAuditKasCabangController extends Controller
             'start_at' => $request->start_at,
             'stop_at' => $current_timestamp,
             'catatan' => $request->catatan,
-            'foto' => $request->foto,
+            'foto' => $foto,
             'temuan' => $request->temuan,
             'ttd' => $request->ttd,
         ]);

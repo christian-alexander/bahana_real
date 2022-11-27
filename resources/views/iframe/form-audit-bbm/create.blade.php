@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,30 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Form Audit Cargo</title>
+    <title>Form Audit BBM</title>
     <style>
         body{ padding: 20px; }
     </style>
 </head>
 <body>
-    <h2><label for="sounding-cargo" class="col-4 col-form-label">Sounding Cargo</label></h2>
+    <h2><label for="audit-oli-kapal" class="col-4 col-form-label">Sounding BBM Harian</label></h2>
     <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="/form-sounding-cargo/create" enctype="multipart/form-data">
+    <form method="post" action="/form-audit-bbm/create" enctype="multipart/form-data">
         @csrf
         @php
-            $current_timestamp = Carbon\Carbon::now();
+        $current_timestamp = Carbon\Carbon::now();
         @endphp
-        <input id="start" name="start" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
-
-        <label for="text" class="col-4 col-form-label">No Form Sounding Cargo</label>
-        <div class="form-group"> 
-            <input id="text" name="no_form" placeholder="No Form" type="text" class="form-control" required>
+        <input id="start" name="start_at" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
+        <label for="text" class="col-4 col-form-label">No Form Sounding BBM</label>
+        <div class="form-group">  
+            <input id="text" name="no_form" placeholder="No Form" type="text" class="form-control">
         </div>
         <label for="date" class="col-4 col-form-label">Tanggal</label>
         <div class="form-group"> 
-            <input type="hidden" name="tanggal" value="{{ Carbon\Carbon::now()->translatedFormat('Y-m-d') }}">
-            <input type="text" class='form-control' value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}" disabled>
-        </div>
+            <div class="input-group">
+                <input type="hidden" name="tanggal" value="{{ Carbon\Carbon::now()->translatedFormat('Y-m-d') }}">
+                <input type="text" class='form-control' value="{{ Carbon\Carbon::now()->translatedFormat('d F Y') }}" disabled>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+            </div>
+        </div> 
         <label for="auditor" class="col-4 col-form-label"> Nama Auditor</label>
         <div class="form-group"> 
             <input type="hidden" name="user_id" value="{{ $user->id }}">
@@ -44,25 +49,23 @@
                 @endforeach
             </select>
         </div>
-        <label for="textarea" class="col-4 col-form-label">Posisi</label>
+        <label for="posisi" class="col-4 col-form-label">Posisi</label>
         <div class="form-group"> 
-            <textarea id="textarea" name="posisi" cols="40" rows="5" class="form-control" required></textarea>
+            <textarea id="posisi" name="posisi" cols="40" rows="5" class="form-control"></textarea>
         </div>
-        <label for="kompartemen" class="col-4 col-form-label">Kompartemen</label> 
-        <div class="form-group">
+        <label for="kompartemen" class="col-4 col-form-label">kompartemen</label>
+        <div class="form-group"> 
             <select id="kompartemen" name="kompartemen" class="custom-select">
-                <option value="s1">S1</option>
-                <option value="s2">S2</option>
-                <option value="s3">S3</option>
-                <option value="s4">S4</option>
-                <option value="s5">S5</option>
-                <option value="s6">S6</option>
-                <option value="p1">P1</option>
-                <option value="p2">P2</option>
-                <option value="p3">P3</option>
-                <option value="p4">P4</option>
-                <option value="p5">P5</option>
-                <option value="p6">P6</option>
+            <option value="s1">S1</option>
+            <option value="s2">S2</option>
+            <option value="s3">S3</option>
+            <option value="p1">P1</option>
+            <option value="p2">P2</option>
+            <option value="p3">P3</option>
+            <option value="ae">AE</option>
+            <option value="me">ME</option>
+            <option value="daily tank">Daily Tank</option>
+            <option value="cargo pump">Cargo Pump</option>
             </select>
         </div>
         <label for="produk" class="col-4 col-form-label">Produk</label> 
@@ -77,32 +80,30 @@
         </div>
         <label for="ketinggian" class="col-4 col-form-label">Ketinggian</label>
         <div class="form-group"> 
-            <input id="ketinggian" name="ketinggian" placeholder="Ketinggian cairan" type="number" class="form-control" required>
+            <input id="ketinggian" name="ketinggian" placeholder="Ketinggian cairan" type="text" class="form-control">
         </div>
         <label for="volume" class="col-4 col-form-label">Volume</label>
         <div class="form-group"> 
-            <input id="volume" name="volume" placeholder="volume" type="number" class="form-control" required>
+            <input id="volume" name="volume" placeholder="volume" type="text" class="form-control">
         </div>
-        <label for="text1" class="col-4 col-form-label">Upload Foto</label>
+        <label for="upload2" class="col-4 col-form-label">Upload Foto Per Kompartemen</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="text1" name="foto1" type="file" class="form-control" accept="image/*" required> 
+                <input id="upload2" name="upload2" type="file" class="form-control"> 
                 <div class="input-group-append">
                     <div class="input-group-text">
-                        <i class="fa fa-photo"></i>
+                        <i class="fa fa-image"></i>
                     </div>
                 </div>
             </div>
         </div> 
-        <h2><label for="sounding-oob" class="col-4 col-form-label">Sounding OOB/Perwira</label></h2>
-        <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-        <label for="ketinggian" class="col-4 col-form-label">Ketinggian</label>
+        <label for="sounding" class="col-4 col-form-label">Sounding OOB/Perwira</label>
         <div class="form-group"> 
-            <input id="ketinggian" name="ketinggian2" placeholder="Ketinggian cairan" type="number" class="form-control">
+            <input id="sounding" name="sounding" placeholder="" type="text" class="form-control">
         </div>
-        <label for="volume" class="col-4 col-form-label">Volume</label>
+        <label for="volume2" class="col-4 col-form-label">Volume</label>
         <div class="form-group"> 
-            <input id="volume" name="volume2" placeholder="volume" type="number" class="form-control">
+            <input id="volume2" name="volume2" placeholder="volume" type="text" class="form-control">
         </div>
         <label for="item" class="col-4 col-form-label">Tambah Item</label>
         <div class="form-group"> 
@@ -115,7 +116,7 @@
                 </div>
             </div>
         </div>
-        <label for="lampiran" class="col-4 col-form-label">Tambah Lampiran</label>
+        <label for="lampiran" class="col-4 col-form-label">tambah lampiran</label>
         <div class="form-group"> 
             <div class="input-group">
                 <input id="lampiran" name="lampiran" type="file" class="form-control"> 
@@ -133,16 +134,16 @@
         <label for="temuan" class="col-4 col-form-label">Temuan</label>
         <div class="form-group"> 
             <textarea id="temuan" name="temuan" cols="40" rows="5" class="form-control"></textarea>
-            <button name="tambah-temuan" type="button" class="btn btn-primary" style="margin-top: 5px;">+</button>
+            {{-- <button name="tambah-temuan" type="submit" class="btn btn-primary" style="margin-top: 5px;">+</button> --}}
         </div>
-        <label for="ttd" class="col-4 col-form-label">Kolom TTD Perwira/OOB</label>
+        <label for="ttd" class="col-4 col-form-label">Kolom TTD Perwira Mesin</label>
         <div class="form-group"> 
             <textarea id="ttd" name="ttd" cols="40" rows="5" class="form-control"></textarea>
         </div>
-        <label for="upload" class="col-4 col-form-label">Upload Foto</label>
+        <label for="upload" class="col-4 col-form-label">Upload Foto Perwira Mesin</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="upload" name="upload2" type="file" class="form-control" accept="image/*"> 
+                <input id="upload" name="upload" type="file" class="form-control"> 
                 <div class="input-group-append">
                     <div class="input-group-text">
                         <i class="fa fa-image"></i>
@@ -165,6 +166,5 @@
             document.getElementById("start").value = ms;
         }
     </script>
-
 </body>
 </html>
