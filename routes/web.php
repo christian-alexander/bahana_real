@@ -1491,11 +1491,5 @@ Route::post('/form-audit-bbm/create', 'FormAuditBbmController@save');
 
 
 // FORM SEKRETARIS
-Route::get('/bahana/form_asuransi_jiwa_owner', [FormAsuransiJiwaOwnerController::class,'index']);
-Route::post('/bahana/form_asuransi_jiwa_owner/doInput', [FormAsuransiJiwaOwnerController::class,'doInput']);
-Route::get('/bahana/form_asuransi_mobil', [FormAsuransiMobilController::class,'index']);
-Route::post('/bahana/form_asuransi_mobil/doInput', [FormAsuransiMobilController::class,'doInput']);
-Route::get('/bahana/form_status_aset_owner', [FormStatusAsetOwnerController::class,'index']);
-Route::post('/bahana/form_status_aset_owner/doInput', [FormStatusAsetOwnerController::class,'doInput']);
-Route::get('/bahana/form_pengajuan_tiket_pesawat', [FormPengajuanTiketPesawatController::class,'index']);
-Route::post('/bahana/form_pengajuan_tiket_pesawat/doInput', [FormStatusAsetOwnerController::class,'doInput']);
+Route::get('form-asuransi-jiwa-owner/create', 'FormAsuransiJiwaOwnerController@create');
+Route::post('form-asuransi-jiwa-owner/doInput', 'FormAsuransiJiwaOwnerController@doInput');
