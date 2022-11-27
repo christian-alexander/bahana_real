@@ -25,7 +25,7 @@ class FormAsuransiMobilController extends Controller
             'start_berlaku' => 'required',
             'end_berlaku' => 'required|date|after_or_equal:start_berlaku',
             'posisi_dokumen_asli' => 'required',
-            'note' => 'required', 
+            'note' => 'required'
         ]);
 
         $validated_data['status'] = 1;
