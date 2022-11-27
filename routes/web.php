@@ -201,17 +201,6 @@ Route::get('perijinan/create/{id}','FormPerijinanController@create');
 Route::resource('anggota','FormKeanggotaanController');
 Route::get('anggota/create/{id}','FormKeanggotaanController@create');
 
-//sekertaris form asuransi mobil
-Route::resource('amobil','FormAsuransiMobilController');
-Route::get('amobil/create/{id}','FormAsuransiMobilController@create');
-//sekertaris form Asuransi jiwa owner
-Route::resource('ajiwa','FormAsuransiJiwaController');
-Route::get('ajiwa/create/{id}','FormAsuransiJiwaController@create');
-
-//sekertaris form status aset owner
-Route::resource('statusowner','FormStatusAsetOwnerController');
-Route::get('statusowner/create/{id}','FormStatusAsetOwnerController@create');
-
 //sekertaris form keluar masuk dokumen brankas
 Route::resource('keluarmasukdoc','FormKeluarMasukDokumenBrankasController');
 Route::get('keluarmasukdoc/create/{id}','FormKeluarMasukDokumenBrankasController@create');
@@ -219,10 +208,6 @@ Route::get('keluarmasukdoc/create/{id}','FormKeluarMasukDokumenBrankasController
 //sekertaris form tagihan
 Route::resource('tagihan','FormTagihanController');
 Route::get('tagihan/create/{id}','FormTagihanController@create');
-
-//sekertaris form permintaan tiket
-Route::resource('ptiket','FormPermintaanTiketController');
-Route::get('ptiket/create/{id}','FormPermintaanTiketController@create');
 
 //internal control form kegiatan audit
 Route::resource('kaudit','FormKegiatanAuditController');
@@ -1504,3 +1489,13 @@ Route::post('/form-audit-kas-cabang/create', 'FormAuditKasCabangController@save'
 Route::get('/form-audit-bbm/create/{user_id}', 'FormAuditBbmController@show');
 Route::post('/form-audit-bbm/create', 'FormAuditBbmController@save');
 
+
+// FORM SEKRETARIS
+Route::get('/bahana/form_asuransi_jiwa_owner', [FormAsuransiJiwaOwnerController::class,'index']);
+Route::post('/bahana/form_asuransi_jiwa_owner/doInput', [FormAsuransiJiwaOwnerController::class,'doInput']);
+Route::get('/bahana/form_asuransi_mobil', [FormAsuransiMobilController::class,'index']);
+Route::post('/bahana/form_asuransi_mobil/doInput', [FormAsuransiMobilController::class,'doInput']);
+Route::get('/bahana/form_status_aset_owner', [FormStatusAsetOwnerController::class,'index']);
+Route::post('/bahana/form_status_aset_owner/doInput', [FormStatusAsetOwnerController::class,'doInput']);
+Route::get('/bahana/form_pengajuan_tiket_pesawat', [FormPengajuanTiketPesawatController::class,'index']);
+Route::post('/bahana/form_pengajuan_tiket_pesawat/doInput', [FormStatusAsetOwnerController::class,'doInput']);
