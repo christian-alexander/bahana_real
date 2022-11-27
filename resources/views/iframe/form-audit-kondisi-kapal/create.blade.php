@@ -62,8 +62,8 @@
             </div>
 
             <div class="form-group"> 
-                <label for="text1" class="col-4 col-form-label">Upload Foto</label>
-                <input type="file" name="foto" class="form-control" accept="image/*">
+                <label for="foto" class="col-4 col-form-label">Upload Foto</label>
+                <input type="file" id='foto' name="foto" class="form-control" accept="image/*">
                 @if ($errors->has('foto'))
                     <div class="invalid-feedback" style="display: block">{{$errors->first('foto')}}</div>
                 @endif

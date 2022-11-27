@@ -23,25 +23,31 @@ class FormAuditTankiController extends Controller
     }
 
     public function save(Request $request){
+        $validated_data = $request->validate([
+            'user_id' => 'required',
+            'office_id' => 'required',
+            'no_form' => 'required',
+            'tanggal' => 'required',
+            'posisi' => 'required',
+            'start_at' => 'required',
+            'catatan' => 'required',
+            'foto' => 'required',
+            'temuan' => 'required',
+            'ttd' => 'required',
+        ]);
+
         if (isset($request->foto) && !empty($request->foto)) {
             $filename = Files::uploadLocalOrS3($request->foto, "form-audit-tanki/$request->user_id");
             $foto = "user-uploads/form-audit-tanki/$request->user_id/$filename";
         }
 
-        FormAuditTanki::create([
-            'user_id' => $request->user_id,
-            'office_id' => $request->office_id,
-            'no_form' => $request->no_form,
-            'tanggal' => $request->tanggal,
-            'posisi' => $request->posisi,
-            'start_at' => date('Y-m-d H:i:s',$request->start_at),
-            'stop_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'catatan' => $request->catatan,
-            'foto' => $foto,
-            'temuan' => $request->temuan,
-            'ttd' => $request->ttd,
-        ]);
+        $validated_data['start_at'] = date('Y-m-d H:i:s',$validated_data['start_at']);
+        $validated_data['stop_at'] = Carbon::now()->format('Y-m-d H:i:s');
+        $validated_data['foto'] = $foto;
+        
+        
+        FormAuditTanki::create($validated_data);
 
-        return redirect()->back();
+        return redirect()->back()->with('success',"Berhasil ditambahkan.");
     }
 }
