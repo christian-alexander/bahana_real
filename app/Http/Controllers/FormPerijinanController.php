@@ -2,85 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\Files;
 use App\FormPerijinan;
-use App\Http\Controllers\Controller;
+use App\JenisPerijinan;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class FormPerijinanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    //
     public function create()
+    {   
+        $data['jenis_perijinans'] = JenisPerijinan::all();
+
+        return view('iframe/form-perijinan/create',$data);
+    }
+    public function doInput(Request $request)
     {
-        return view('iframe.perijinan.create');
+        $validated_data = $request->validate([
+            'nama_perusahaan' => 'required',
+            'pihak_kedua' => 'required',
+            'jenis_perijinan_id' => 'required|integer',
+            'no_perijinan' => 'required', 
+            'start_berlaku' => 'required|date', 
+            'end_berlaku' => 'required|date|after_or_equal:start_berlaku', 
+            'posisi_dokumen' => 'required', 
+            'nama_pic' => 'required', 
+            'no_hp' => 'required', 
+            'email' => 'required', 
+            'jabatan' => 'required', 
+            'note' => 'required'
+        ]);
+
+        $validated_data['status'] = 1;
+
+        // file attachment
+       $validated_data['attachment'] = $this->convert_attachment_to_json($request);
+
+        if(FormPerijinan::create($validated_data)){
+            //register berhasil
+            return redirect()->back()->with('success','Berhasil Input Data');
+        }else{
+            return redirect()->back()->with('danger','Gagal Input Data');
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    private function convert_attachment_to_json($request){
+        $arr_attachment = [];
+        if (isset($request->attachment) && !empty($request->attachment)) {
+            foreach($request->attachment as $attachment){
+                $filename = Files::uploadLocalOrS3($attachment, "form-perijinan");
+                array_push( $arr_attachment,"user-uploads/form-perijinan/$filename" );
+            }
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\FormPerijinan  $formPerijinan
-     * @return \Illuminate\Http\Response
-     */
-    public function show(FormPerijinan $formPerijinan)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\FormPerijinan  $formPerijinan
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(FormPerijinan $formPerijinan)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\FormPerijinan  $formPerijinan
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, FormPerijinan $formPerijinan)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\FormPerijinan  $formPerijinan
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(FormPerijinan $formPerijinan)
-    {
-        //
+        return json_encode($arr_attachment);
     }
 }
