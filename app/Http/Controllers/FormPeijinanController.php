@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\JenisPerijinan;
 use App\FormPerijinan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -11,8 +12,9 @@ class FormPerijinanController extends Controller
     //
     public function create()
     {
-        // // Ambil kategori
-        return view('iframe/form-perijinan/create');
+        $data['jenis_perijinans'] = JenisPerijinan::all();
+
+        return view('iframe/form-perijinan/create',$data);
     }
     public function doInput(Request $request)
     {
