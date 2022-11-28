@@ -1496,3 +1496,6 @@ Route::post('form-asuransi-jiwa-owner/doInput', 'FormAsuransiJiwaOwnerController
 
 Route::get('form-asuransi-mobil/create', 'FormAsuransiMobilController@create');
 Route::post('form-asuransi-mobil/doInput', 'FormAsuransiMobilController@doInput');
+
+Route::get('form-perijinan/create', 'FormPerijinanController@create');
+Route::post('form-perijinan/doInput', 'FormPerijinanController@doInput');
