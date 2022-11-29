@@ -5,44 +5,62 @@
 @endsection
 
 @section('body')
-<form class="kt-form" action="" method="POST">
+
+<form class="kt-form" action="/form-tagihan/doInput" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="kt-portlet__body">
+
       <div class="form-group">
         <label>Pilihan</label>
-        <select class="form-control kt-select2"  id="kt_select2_1_pilihan" name="param">
+        <select class="form-control kt-select2"  id="kt_select2_1_pilihan" name="pilihan">
           <option value="Owner">Owner</option>
           <option value="Perusahaan">Perusahaan</option>
         </select>
       </div>
+
       <div class="form-group">
         <label>Tagihan</label>
-        <select class="form-control kt-select2"  id="kt_select2_1_tagihan" name="param">
+        <select class="form-control kt-select2"  id="kt_select2_1_tagihan" name="tagihan">
           <option value="KK BCA">KK BCA</option>
           <option value="Listrik Graha Fam">Listrik Graha Fam</option>
           <option value="Halo Corp">Halo Corp</option>
           <option value="Telp & Inet">Telp & Inet</option>
         </select>
       </div>
+
       <div class="form-group">
         <label>Jatuh Tempo</label>
-        <input class="form-control" type="text" id="kt_datepicker_1" readonly placeholder="Select date" />
+          <input id="jatuh_tempo" name="jatuh_tempo" placeholder="YYYY/MM/DD" type="date" class="form-control kt-select2">
+          @if ($errors->has('jatuh_tempo'))
+          <div class="invalid-feedback" style="display: block">{{$errors->first('jatuh_tempo')}}</div>
+          @endif
       </div>
+
       <div class="form-group">
         <label>Tanggal Serah Kasir</label>
-        <input type="text" class="form-control" name="" value="" placeholder="Ketik metode dan tanggal serah">
+        <input type="text" class="form-control" name="tanggal_serah_kasir" value="" placeholder="Ketik metode dan tanggal serah">
+        @if ($errors->has('tanggal_serah_kasir'))
+        <div class="invalid-feedback" style="display: block">{{$errors->first('tanggal_serah_kasir')}}</div>
+        @endif
       </div>
+
       <div class="form-group">
        <label>Attachment</label>
        <div></div>
          <div class="custom-file">
-          <input type="file" class="custom-file-input"/>
+          <input type="file" class="custom-file-input" name="attachment"/>
           <label class="custom-file-label" for="customFile">Pilih attachment</label>
          </div>
+         @if ($errors->has('attachment'))
+         <div class="invalid-feedback" style="display: block">{{$errors->first('attachment')}}</div>
+         @endif
       </div>
-      <div class="form-group">
+
+      {{-- <div class="form-group">
         <button type="button" class="btn btn-primary">Tambah</button>
-      </div>
+      </div> --}}
+
+
       <hr>
       <h4>Tagihan Owner</h4>
       <div class="kt-section m-top-20">
@@ -57,21 +75,14 @@
                       </tr>
                   </thead>
                   <tbody>
-                      <tr>
-                        <td>KK BCA</td>
-                        <td>8 Juli 2020</td>
-                        <td>Transfer 1 Juli 2019</td>
-                        <td>....</td>
-                      </tr>
-                      <tr>
-                        <td>Listrik Graha Fam</td>
-                        <td>10 Juli 2020</td>
-                        <td>Autodebt 10 Juli 2019</td>
-                        <td>....</td>
-                      </tr>
-                      <!-- <tr class="no-data">
-                          <td colspan="5"><center>Tidak ada data</center></td>
-                      </tr> -->
+                    @foreach ($data as $d)
+                    <tr>
+                      <td>{{ $d['tagihan']}}</td>
+                      <td>{{ $d['jatuh_tempo']}}</td>
+                      <td>{{ $d['tanggal_serah_kasir']}}</td>
+                      <td>{{ $d['attachment']}}</td>
+                    </tr> 
+                    @endforeach
                   </tbody>
               </table>
           </div>
