@@ -21,7 +21,7 @@ class FormAuditKasCabangController extends Controller
     }
 
 
-    public function save(Request $request){
+    public function save1(Request $request){
 
         if (isset($request->foto) && !empty($request->foto)) {
             $filename = Files::uploadLocalOrS3($request->foto, "form-audit-kas-cabang/$request->user_id");
@@ -42,5 +42,32 @@ class FormAuditKasCabangController extends Controller
             'temuan' => $request->temuan,
             'ttd' => $request->ttd,
         ]);
+    }
+    public function save(Request $request){
+        $validated_data = $request->validate([
+            'no_form' => 'required',
+            'tanggal' => 'required',
+            'users_id' => 'required',
+            'cabang_id' => 'required',
+            'posisi' => 'required',
+            'start_at' => 'required',
+            'catatan' => 'required',
+            'foto' => 'required',
+            'temuan' => 'required',
+            'ttd' => 'required',
+
+        ]);
+        
+        if (isset($request->foto) && !empty($request->foto)) {
+            $filename = Files::uploadLocalOrS3($request->foto, "form-audit-kas-cabang/$request->users_id");
+            $foto = "user-uploads/form-audit-kas-cabang/$request->users_id/$filename";
+        }
+
+        $validated_data['stop_at'] = Carbon::now();
+        $validated_data['foto'] = $foto;
+        
+        FormAuditKasCabang::create($validated_data);
+
+        return redirect()->back()->with('success',"Berhasil ditambahkan.");
     }
 }

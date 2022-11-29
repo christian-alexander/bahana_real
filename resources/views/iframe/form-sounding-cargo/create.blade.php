@@ -1,25 +1,19 @@
+@extends('iframe.layouts.index')
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Form Audit Cargo</title>
-    <style>
-        body{ padding: 20px; }
-    </style>
-</head>
-<body>
-    <h2><label for="sounding-cargo" class="col-4 col-form-label">Sounding Cargo</label></h2>
-    <hr style="height:2px;border-width:0;color:black;background-color:black;text-align:left;margin-left:0">
-    <form method="post" action="/form-sounding-cargo/create" enctype="multipart/form-data">
-        @csrf
-        @php
-            $current_timestamp = Carbon\Carbon::now();
-        @endphp
+@section('title')
+    Form Sounding Cargo
+@endsection
+
+@section('body')
+
+
+
+<form method="post" action="/form-sounding-cargo/create" enctype="multipart/form-data">
+    @csrf
+    @php
+        $current_timestamp = Carbon\Carbon::now();
+    @endphp
+    <div class="kt-portlet__body">
         <input id="start" name="start" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
 
         <label for="text" class="col-4 col-form-label">No Form Sounding Cargo</label>
@@ -102,12 +96,12 @@
         </div>
         <label for="volume" class="col-4 col-form-label">Volume</label>
         <div class="form-group"> 
-            <input id="volume" name="volume2" placeholder="volume" type="number" class="form-control">
+            <input id="volume" name="volume2" placeholder="volume" type="number" class="form-control" required>
         </div>
         <label for="item" class="col-4 col-form-label">Tambah Item</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="item" name="item" type="text" class="form-control"> 
+                <input id="item" name="item" type="text" class="form-control" required> 
                 <div class="input-group-append">
                     <div class="input-group-text">
                         <i class="fa fa-plus"></i>
@@ -118,9 +112,9 @@
         <label for="lampiran" class="col-4 col-form-label">Tambah Lampiran</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="lampiran" name="lampiran" type="file" class="form-control"> 
+                <input id="lampiran" name="lampiran" type="file" class="form-control" required> 
                 <div class="input-group-append">
-                    <div class="input-group-text">
+                    <div class="input-group-text" >
                         <i class="fa fa-image"></i>
                     </div>
                 </div>
@@ -128,7 +122,7 @@
         </div>
         <label for="catatan" class="col-4 col-form-label">Catatan</label>
         <div class="form-group">
-            <textarea id="catatan" name="catatan" cols="40" rows="5" class="form-control"></textarea>
+            <textarea id="catatan" name="catatan" cols="40" rows="5" class="form-control" required></textarea>
         </div>
         <label for="temuan" class="col-4 col-form-label">Temuan</label>
         <div class="form-group"> 
@@ -136,13 +130,21 @@
             <button name="tambah-temuan" type="button" class="btn btn-primary" style="margin-top: 5px;">+</button>
         </div>
         <label for="ttd" class="col-4 col-form-label">Kolom TTD Perwira/OOB</label>
-        <div class="form-group"> 
-            <textarea id="ttd" name="ttd" cols="40" rows="5" class="form-control"></textarea>
+        <div id="signature-pad" class="signature-pad" style="height: 250px;border: none;box-shadow: none;padding: 0">
+            <label for="ttd" class="col-4 col-form-label">Kolom TTD</label>
+            <div class="signature-pad--body">
+                <canvas style="width: 100%;height: 100%;border: solid 1px #ccc;"></canvas>
+            </div>
+            <textarea id="signature64" name="ttd" style="display: none" required></textarea>
+            <button type="button" id="clear" class="btn btn-primary btn-sm form-control" data-action="clear">Bersihkan</button>
+            @if ($errors->has('ttd'))
+                <div class="invalid-feedback" style="display: block">{{$errors->first('ttd')}}</div>
+            @endif
         </div>
         <label for="upload" class="col-4 col-form-label">Upload Foto</label>
         <div class="form-group"> 
             <div class="input-group">
-                <input id="upload" name="upload2" type="file" class="form-control" accept="image/*"> 
+                <input id="upload" name="upload2" type="file" class="form-control" accept="image/*" required> 
                 <div class="input-group-append">
                     <div class="input-group-text">
                         <i class="fa fa-image"></i>
@@ -153,18 +155,25 @@
         <div class="form-group">
             <button name="save-as" type="button" class="btn btn-primary">Save As</button>
             <button type="button" class="btn btn-primary" onclick="get_time_now()">Start</button>
-            <button name="stop" type="submit" class="btn btn-primary">Simpan Laporan</button>
+            <button name="stop" type="submit" class="btn btn-primary" id='submitBtn'>Simpan Laporan</button>
         </div>
-    </form>
+    </div>
+</form>
 
-
+@endsection
+@section('script')
+    
     <script>
         function get_time_now(){
             alert("waktu pengisian form telah dimulai");
             let ms = Math.floor(Date.now() / 1000);
-            document.getElementById("start").value = ms;
+            document.getElementById("start_at").value = ms;
         }
     </script>
 
-</body>
-</html>
+        @if (session()->has('success'))
+            <script>
+                alert("{{ session()->get('success') }}");
+            </script>
+        @endif
+@endsection
