@@ -8,79 +8,33 @@ use Illuminate\Http\Request;
 
 class FormAsuransiMobilController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    //
     public function create()
     {
-        return view('iframe.amobil.create');
+        // // Ambil kategori
+        return view('iframe/form-asuransi-mobil/create');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function doInput(Request $request)
     {
-        //
-    }
+        $validated_data = $request->validate([
+            'wilayah_operasional' => 'required',
+            'keterangan_mobil' => 'required', 
+            'pengguna' => 'required',
+            'asuransi' => 'required', 
+            'nilai_asuransi' => 'required|integer', 
+            'start_berlaku' => 'required',
+            'end_berlaku' => 'required|date|after_or_equal:start_berlaku',
+            'posisi_dokumen_asli' => 'required',
+            'note' => 'required'
+        ]);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\FormAsuransiMobil  $formAsuransiMobil
-     * @return \Illuminate\Http\Response
-     */
-    public function show(FormAsuransiMobil $formAsuransiMobil)
-    {
-        //
-    }
+        $validated_data['status'] = 1;
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\FormAsuransiMobil  $formAsuransiMobil
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(FormAsuransiMobil $formAsuransiMobil)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\FormAsuransiMobil  $formAsuransiMobil
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, FormAsuransiMobil $formAsuransiMobil)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\FormAsuransiMobil  $formAsuransiMobil
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(FormAsuransiMobil $formAsuransiMobil)
-    {
-        //
+        if(FormAsuransiMobil::create($validated_data)){
+            //register berhasil
+            return redirect()->back()->with('success','Berhasil Input Data');
+        }else{
+            return redirect()->back()->with('danger','Gagal Input Data');
+        }
     }
 }
