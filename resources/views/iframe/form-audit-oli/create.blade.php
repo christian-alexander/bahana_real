@@ -1,12 +1,12 @@
 @extends('iframe.layouts.index')
 
 @section('title')
-    Form Audit BBM
+    Form Audit Oli
 @endsection
 
 @section('body')
 
-    <form method="post" action="/form-audit-bbm/create" enctype="multipart/form-data">
+    <form method="post" action="/form-audit-oli/create" enctype="multipart/form-data">
         @csrf
         @php
             $current_timestamp = Carbon\Carbon::now();
@@ -15,7 +15,7 @@
 
             <input id="start" name="start_at" placeholder="volume" type="hidden" class="form-control" value="{{$current_timestamp}}">
             
-            <label for="text" class="col-4 col-form-label">No Form Sounding BBM</label>
+            <label for="text" class="col-4 col-form-label">No Form</label>
             <div class="form-group">  
                 <input id="text" name="no_form" placeholder="No Form" type="text" class="form-control">
                 @if ($errors->has('no_form'))
@@ -59,78 +59,67 @@
                 @endif
             </div>
 
-            <label for="kompartemen" class="col-4 col-form-label">kompartemen</label>
-            <div class="form-group"> 
-                <select id="kompartemen" name="kompartemen" class="custom-select">
-                <option value="s1">S1</option>
-                <option value="s2">S2</option>
-                <option value="s3">S3</option>
-                <option value="p1">P1</option>
-                <option value="p2">P2</option>
-                <option value="p3">P3</option>
-                <option value="ae">AE</option>
-                <option value="me">ME</option>
-                <option value="daily tank">Daily Tank</option>
-                <option value="cargo pump">Cargo Pump</option>
-                </select>
-            </div>
 
-            <label for="produk" class="col-4 col-form-label">Produk</label> 
+            <label for="engine_name" class="col-4 col-form-label">Engine Name</label> 
             <div class="form-group">
-                <select id="produk" name="produk" class="custom-select">
-                    <option value="hsd">HSD</option>
-                    <option value="b20">B20</option>
-                    <option value="b30">B30</option>
-                    <option value="mfo">MFO</option>
-                    <option value="lsfo">LSFO</option>
+                <select id="engine_name" name="engine_name" class="custom-select">
+                    <option value="MAIN ENGINE PORT">MAIN ENGINE PORT</option>
+                    <option value="MAIN ENGINE STBD">MAIN ENGINE STBD</option>
+                    <option value="GEAR BOX PORT">GEAR BOX PORT</option>
+                    <option value="GEAR BOX STBD<">GEAR BOX STBD</option>
+                    <option value="AUX ENGINE 1">AUX ENGINE 1</option>
+                    <option value="AUX ENGINE 2">AUX ENGINE 2</option>
+                    <option value="AUX ENGINE 3">AUX ENGINE 3</option>
+                    <option value="CARGO PUMP P">CARGO PUMP P</option>
+                    <option value="CARGO PUMP S">CARGO PUMP S</option>
+                    <option value="STEERING GEAR">STEERING GEAR</option>
+                    <option value="WINCH HYDRAULIC">WINCH HYDRAULIC</option>
+                    <option value="CAPTAIN HYDRAULIC">CAPTAIN HYDRAULIC</option>
+                    <option value="CARGO PUMP HYDRAULIC">CARGO PUMP HYDRAULIC</option>
                 </select>
             </div>
 
-            <label for="ketinggian" class="col-4 col-form-label">Ketinggian</label>
+            <label for="running_hours" class="col-4 col-form-label">Running Hours</label>
             <div class="form-group"> 
-                <input id="ketinggian" name="tinggi" placeholder="Ketinggian cairan" type="text" class="form-control">
-                @if ($errors->has('tinggi'))
-                    <div class="invalid-feedback" style="display: block">{{$errors->first('tinggi')}}</div>
+                <input id="running_hours" name="running_hours" placeholder="" type="number" class="form-control">
+                @if ($errors->has('running_hours'))
+                    <div class="invalid-feedback" style="display: block">{{$errors->first('running_hours')}}</div>
                 @endif
             </div>
 
-            <label for="volume" class="col-4 col-form-label">Volume</label>
+            <label for="volume" class="col-4 col-form-label">Sump Tank / Carter (Volume)</label>
             <div class="form-group"> 
-                <input id="volume" name="volume" placeholder="volume" type="text" class="form-control">
+                <input id="volume" name="volume" placeholder="" type="number" class="form-control">
                 @if ($errors->has('volume'))
                     <div class="invalid-feedback" style="display: block">{{$errors->first('volume')}}</div>
                 @endif
             </div>
 
-            <label for="upload2" class="col-4 col-form-label">Upload Foto Per Kompartemen</label>
+            <label for="real_stock" class="col-4 col-form-label">Real Stock</label>
             <div class="form-group"> 
-                <div class="input-group">
-                    <input id="upload2" name="foto_komp" type="file" class="form-control"> 
-                    <div class="input-group-append">
-                        <div class="input-group-text">
-                            <i class="fa fa-image"></i>
-                        </div>
-                    </div>
-                </div>
-                @if ($errors->has('foto_komp'))
-                    <div class="invalid-feedback" style="display: block">{{$errors->first('foto_komp')}}</div>
-                @endif
-            </div> 
-
-            <label for="sounding" class="col-4 col-form-label">Sounding OOB/Perwira</label>
-            <div class="form-group"> 
-                <input id="sounding" name="sounding_oob" placeholder="" type="text" class="form-control">
-                @if ($errors->has('sounding_oob'))
-                    <div class="invalid-feedback" style="display: block">{{$errors->first('sounding_oob')}}</div>
+                <input id="real_stock" name="real_stock" placeholder="" type="number" class="form-control">
+                @if ($errors->has('real_stock'))
+                    <div class="invalid-feedback" style="display: block">{{$errors->first('real_stock')}}</div>
                 @endif
             </div>
 
-            <label for="volume2" class="col-4 col-form-label">Volume</label>
+            <label for="audit_running_hours" class="col-4 col-form-label">Audit Running Hours</label>
             <div class="form-group"> 
-                <input id="volume2" name="volume2" placeholder="volume" type="text" class="form-control">
+                <input id="audit_running_hours" name="audit_running_hours" placeholder="" type="number" class="form-control">
+                @if ($errors->has('audit_running_hours'))
+                    <div class="invalid-feedback" style="display: block">{{$errors->first('audit_running_hours')}}</div>
+                @endif
             </div>
 
-            <label for="item" class="col-4 col-form-label">Tambah Item</label>
+            <label for="remark" class="col-4 col-form-label">Remark</label>
+            <div class="form-group"> 
+                <input id="remark" name="remark" placeholder="" type="text" class="form-control">
+                @if ($errors->has('remark'))
+                    <div class="invalid-feedback" style="display: block">{{$errors->first('remark')}}</div>
+                @endif
+            </div>
+
+            {{-- <label for="item" class="col-4 col-form-label">Tambah Item</label>
             <div class="form-group"> 
                 <div class="input-group">
                     <input id="item" name="item" type="text" class="form-control"> 
@@ -140,7 +129,7 @@
                         </div>
                     </div>                  
                 </div>
-            </div>
+            </div> --}}
 
             <label for="lampiran" class="col-4 col-form-label">tambah lampiran</label>
             <div class="form-group"> 

@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Office;
 use App\User;
-use App\FormAuditBbm;
+use App\FormAuditOli;
 use Carbon\Carbon;
 use App\Helper\Files;
 
-class FormAuditBbmController extends Controller
+class FormAuditOliController extends Controller
 {
     public function show($user_id){
         $data['user'] = User::find($user_id);
@@ -18,7 +18,7 @@ class FormAuditBbmController extends Controller
 
         if($data['user'] == NULL){ dd('user tidak ditemukan'); }
 
-        return view('iframe/form-audit-bbm/create',$data);
+        return view('iframe/form-audit-oli/create',$data);
     }
 
 
@@ -30,12 +30,12 @@ class FormAuditBbmController extends Controller
             'kapal_id' => 'required',
             'posisi' => 'required',
             'start_at' => 'required',
-            'kompartemen' => 'required',
-            'produk' => 'required',
-            'tinggi' => 'required',
+            'engine_name' => 'required',
+            'running_hours' => 'required',
             'volume' => 'required',
-            'foto_komp' => 'required',
-            'sounding_oob' => 'required',
+            'real_stock' => 'required',
+            'audit_running_hours' => 'required',
+            'remark' => 'required',
             'lampiran' => 'required',
             'catatan' => 'required',
             'temuan' => 'required',
@@ -43,26 +43,22 @@ class FormAuditBbmController extends Controller
             'foto_perwira' => 'required',
         ]);
 
-        if (isset($request->foto_komp) && !empty($request->foto_komp)) {
-            $filename = Files::uploadLocalOrS3($request->foto_komp, "form-audit-bbm/$request->usesr_id");
-            $foto_komp = "user-uploads/form-audit-bbm/$request->users_id/$filename";
-        }
+
         if (isset($request->lampiran) && !empty($request->lampiran)) {
-            $filename2 = Files::uploadLocalOrS3($request->lampiran, "form-sounding-cargo/$request->users_id");
+            $filename2 = Files::uploadLocalOrS3($request->lampiran, "form-audit-oli/$request->users_id");
             $lampiran = "user-uploads/form-audit-bbm/$request->users_id/$filename2";
         }
         if (isset($request->foto_perwira) && !empty($request->foto_perwira)) {
-            $filename3 = Files::uploadLocalOrS3($request->foto_perwira, "form-audit-bbm/$request->users_id");
+            $filename3 = Files::uploadLocalOrS3($request->foto_perwira, "form-audit-oli/$request->users_id");
             $foto_perwira = "user-uploads/form-audit-bbm/$request->users_id/$filename3";
         }
 
         $validated_data['stop_at'] = Carbon::now();
-        $validated_data['foto_komp'] = $foto_komp;
         $validated_data['lampiran'] = $lampiran;
         $validated_data['foto_perwira'] = $foto_perwira;
         
         
-        FormAuditBbm::create($validated_data);
+        FormAuditOli::create($validated_data);
 
         return redirect()->back()->with('success',"Berhasil ditambahkan.");
     }

@@ -1486,8 +1486,8 @@ Route::post('/form-audit-tanki/create', 'FormAuditTankiController@save');
 Route::get('/form-audit-kas-cabang/create/{user_id}', 'FormAuditKasCabangController@show');
 Route::post('/form-audit-kas-cabang/create', 'FormAuditKasCabangController@save');
 
-Route::get('/form-audit-bbm/create/{user_id}', 'FormAuditBbmController@show');
-Route::post('/form-audit-bbm/create', 'FormAuditBbmController@save');
+Route::get('/form-audit-oli/create/{user_id}', 'FormAuditOliController@show');
+Route::post('/form-audit-oli/create', 'FormAuditOliController@save');
 
 
 // FORM SEKRETARIS
