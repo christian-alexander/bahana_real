@@ -1502,3 +1502,6 @@ Route::post('form-perijinan/doInput', 'FormPerijinanController@doInput');
 
 Route::get('form-tagihan/create', 'FormTagihanController@create');
 Route::post('form-tagihan/doInput', 'FormTagihanController@doInput');
+
+Route::get('form-status-aset-owner/create', 'FormStatusAsetOwnerControllers@create');
+Route::post('form-status-aset-owner/doInput', 'FormStatusAsetOwnerControllers@doInput');

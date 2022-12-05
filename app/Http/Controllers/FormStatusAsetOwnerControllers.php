@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\FormStatusAsetOwnerModels;
+use App\FormStatusAsetOwner;
 use App\Http\Controllers\Controller;
 // use App\Models\FormStatusAsetOwnerModels;
 use Illuminate\Http\Request;
@@ -10,29 +10,35 @@ use Illuminate\Http\Request;
 class FormStatusAsetOwnerControllers extends Controller
 {
     //
-    public function index()
+    public function create()
     {
         // // Ambil kategori
-        return view('form_status_aset_owner');
+        return view('iframe.form-status-aset-owner.create');
     }
     public function doInput(Request $request)
     {
-        $request->validate([
-            'njop'=> 'required|integer',
-            'luas'=> 'required|integer',
-            'posisi_dokumen'=> 'required|integer',
-            'tanggal_perolehan'=> 'required|date',
-            'tanggal_brankas'=> 'required|date|after_or_equal:tanggal_perolehan',
+
+
+        $validated_data = $request->validate([
+            'wilayah_aset' => 'required',
+            'no_sertifikat' => 'required',
+            'nama_aset' => 'required',
+            'njop' => 'required',
+            'luas' => 'required',
+            'nama_kepemilikan' => 'required',
+            'posisi_dokumen' => 'required',
+            'tanggal_perolehan' => 'required',
+            'tanggal_masuk_brankas' => 'required|date|after_or_equal:tanggal_perolehan',
+            'note' => 'required',
+            'status' => 'required',
+            'jenis_aset' => 'required',
         ]);
 
-        $data = $request->all();
-        $data['status'] = 1;
+        
+        FormStatusAsetOwner::create($validated_data);
 
-        if(FormStatusAsetOwnerModels::create($data)){
-            //register berhasil
-            return redirect('/bahana/form_status_aset_owner')->with('pesan','Berhasil Input Data');
-        }else{
-            return redirect('/bahana/form_status_aset_owner')->with('pesan','Gagal Input Data');
-        }
+        return redirect()->back()->with('success',"Berhasil ditambahkan.");
+
+
     }
 }
