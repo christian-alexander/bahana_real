@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\User;
 use App\FormStatusAsetOwner;
 use App\Http\Controllers\Controller;
 // use App\Models\FormStatusAsetOwnerModels;
@@ -10,16 +10,19 @@ use Illuminate\Http\Request;
 class FormStatusAsetOwnerControllers extends Controller
 {
     //
-    public function create()
+    public function create($user_id)
     {
         // // Ambil kategori
-        return view('iframe.form-status-aset-owner.create');
+        
+        $d = User::find($user_id);
+        return view('iframe.form-status-aset-owner.create',['d' => $d]);
     }
     public function doInput(Request $request)
     {
 
 
         $validated_data = $request->validate([
+            'user_id' => 'required',
             'wilayah_aset' => 'required',
             'no_sertifikat' => 'required',
             'nama_aset' => 'required',

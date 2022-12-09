@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\FormTagihan;
+
+use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Helper\Files;
@@ -24,10 +26,12 @@ class FormTagihanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($user_id)
     {
         $data= FormTagihan::all();
-        return view('iframe.tagihan.create', ['data' => $data]);
+        $d = User::find($user_id);
+
+        return view('iframe.tagihan.create', ['data' => $data, 'd' => $d]);
     }
 
     /**
@@ -39,6 +43,7 @@ class FormTagihanController extends Controller
     public function doInput(Request $request)
     {
         $validated_data = $request->validate([
+            'user_id' => 'required',
             'pilihan' => 'required',
             'tagihan' => 'required',
             'jatuh_tempo' => 'required',

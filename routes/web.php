@@ -1500,8 +1500,8 @@ Route::post('form-asuransi-mobil/doInput', 'FormAsuransiMobilController@doInput'
 Route::get('form-perijinan/create/{user_id}', 'FormPerijinanController@create');
 Route::post('form-perijinan/doInput', 'FormPerijinanController@doInput');
 
-Route::get('form-tagihan/create', 'FormTagihanController@create');
+Route::get('form-tagihan/create/{user_id}', 'FormTagihanController@create');
 Route::post('form-tagihan/doInput', 'FormTagihanController@doInput');
 
-Route::get('form-status-aset-owner/create', 'FormStatusAsetOwnerControllers@create');
+Route::get('form-status-aset-owner/create/{user_id}', 'FormStatusAsetOwnerControllers@create');
 Route::post('form-status-aset-owner/doInput', 'FormStatusAsetOwnerControllers@doInput');
