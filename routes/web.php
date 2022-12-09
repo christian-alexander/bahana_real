@@ -1491,7 +1491,7 @@ Route::post('/form-audit-oli/create', 'FormAuditOliController@save');
 
 
 // FORM SEKRETARIS
-Route::get('form-asuransi-jiwa-owner/create', 'FormAsuransiJiwaOwnerController@create');
+Route::get('form-asuransi-jiwa-owner/create/{user_id}', 'FormAsuransiJiwaOwnerController@create');
 Route::post('form-asuransi-jiwa-owner/doInput', 'FormAsuransiJiwaOwnerController@doInput');
 
 Route::get('form-asuransi-mobil/create', 'FormAsuransiMobilController@create');

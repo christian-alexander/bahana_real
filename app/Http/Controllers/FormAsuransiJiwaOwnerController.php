@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
+use Illuminate\Http\Request;
 use App\FormAsuransiJiwaOwner;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class FormAsuransiJiwaOwnerController extends Controller
 {
     //
-    public function create()
+    public function create($user_id)
     {
-        // // Ambil kategori
-        return view('iframe/form-asuransi-jiwa-owner/create');
+        $data['user'] = User::find($user_id);
+
+        return view('iframe/form-asuransi-jiwa-owner/create',$data);
     }
+    
     public function doInput(Request $request)
     {
         $validated_data = $request->validate([
+            'user_id' => 'required',
             'nama_pemilik' => 'required',
             'asuransi' => 'required',
             'tahapan_asuransi' => 'required',

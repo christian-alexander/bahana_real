@@ -24,7 +24,16 @@
         </ul>
         </div>
       @endif --}}
+
+      <input type="hidden" name="user_id" value="{{ $user->id }}">
+      <div class="form-group row">
+        <label for="nama_pemilik" class="col-4 col-form-label">User Penginput</label>
+        <div class="col-8">
+          <input type="text" class="form-control" disabled value='{{ $user->name }}'>
+        </div>
+      </div>
       
+
       <div class="form-group row">
         <label for="nama_pemilik" class="col-4 col-form-label">Nama Pemilik</label>
         <div class="col-8">
