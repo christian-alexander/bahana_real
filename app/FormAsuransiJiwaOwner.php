@@ -11,6 +11,6 @@ class FormAsuransiJiwaOwner extends Model
     protected $primaryKey   = "id";
 
     protected $fillable = [
-        'nama_pemilik','asuransi', 'tahapan_asuransi', 'nilai_asuransi', 'jumlah_premi', 'jatuh_tempo', 'tanggal_bayar', 'note', 'status',
+        'user_id','nama_pemilik','asuransi', 'tahapan_asuransi', 'nilai_asuransi', 'jumlah_premi', 'jatuh_tempo', 'tanggal_bayar', 'note', 'status',
     ];
 }
