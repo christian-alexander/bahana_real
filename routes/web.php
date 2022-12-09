@@ -1494,7 +1494,7 @@ Route::post('/form-audit-oli/create', 'FormAuditOliController@save');
 Route::get('form-asuransi-jiwa-owner/create/{user_id}', 'FormAsuransiJiwaOwnerController@create');
 Route::post('form-asuransi-jiwa-owner/doInput', 'FormAsuransiJiwaOwnerController@doInput');
 
-Route::get('form-asuransi-mobil/create', 'FormAsuransiMobilController@create');
+Route::get('form-asuransi-mobil/create/{user_id}', 'FormAsuransiMobilController@create');
 Route::post('form-asuransi-mobil/doInput', 'FormAsuransiMobilController@doInput');
 
 Route::get('form-perijinan/create', 'FormPerijinanController@create');

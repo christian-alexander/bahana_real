@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use App\FormAsuransiMobil;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class FormAsuransiMobilController extends Controller
 {
     //
-    public function create()
+    public function create($user_id)
     {
-        // // Ambil kategori
-        return view('iframe/form-asuransi-mobil/create');
+        $data['user'] = User::find($user_id);
+
+        return view('iframe/form-asuransi-mobil/create',$data);
     }
     public function doInput(Request $request)
     {
