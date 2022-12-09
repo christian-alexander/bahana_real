@@ -10,6 +10,6 @@ class FormPerijinan extends Model
     protected $primaryKey   = "id";
 
     protected $fillable = [
-        'nama_perusahaan','pihak_kedua', 'jenis_perijinan_id', 'no_perijinan', 'start_berlaku', 'end_berlaku', 'posisi_dokumen', 'nama_pic', 'no_hp', 'email', 'jabatan', 'attachment', 'note', 'status',
+        'user_id','nama_perusahaan','pihak_kedua', 'jenis_perijinan_id', 'no_perijinan', 'start_berlaku', 'end_berlaku', 'posisi_dokumen', 'nama_pic', 'no_hp', 'email', 'jabatan', 'attachment', 'note', 'status',
     ];
 }

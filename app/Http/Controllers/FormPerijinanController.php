@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use App\Helper\Files;
 use App\FormPerijinan;
 use App\JenisPerijinan;
@@ -11,8 +12,10 @@ use App\Http\Controllers\Controller;
 class FormPerijinanController extends Controller
 {
     //
-    public function create()
+    public function create($user_id)
     {   
+        $data['user'] = User::find($user_id);
+
         $data['jenis_perijinans'] = JenisPerijinan::all();
 
         return view('iframe/form-perijinan/create',$data);
@@ -20,6 +23,7 @@ class FormPerijinanController extends Controller
     public function doInput(Request $request)
     {
         $validated_data = $request->validate([
+            'user_id' => 'required',
             'nama_perusahaan' => 'required',
             'pihak_kedua' => 'required',
             'jenis_perijinan_id' => 'required|integer',
@@ -33,6 +37,7 @@ class FormPerijinanController extends Controller
             'jabatan' => 'required', 
             'note' => 'required'
         ]);
+
 
         $validated_data['status'] = 1;
 
