@@ -9,6 +9,12 @@
 <form class="kt-form" action="/form-status-aset-owner/doInput" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="kt-portlet__body">
+        
+        <input type="hidden" name="user_id" value="{{ $d->id }}">
+        <div class="form-group">
+          <label for="nama_pemilik" class="col-4 col-form-label">User Penginput</label>
+          <input type="text" class="form-control" disabled value='{{ $d->name }}'>
+        </div>
 
         <div class="form-group">
             <label>Wilayah Aset</label>

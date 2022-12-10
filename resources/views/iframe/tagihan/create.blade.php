@@ -10,6 +10,12 @@
     @csrf
     <div class="kt-portlet__body">
 
+      <input type="hidden" name="user_id" value="{{ $d->id }}">
+      <div class="form-group">
+        <label for="nama_pemilik" class="col-4 col-form-label">User Penginput</label>
+        <input type="text" class="form-control" disabled value='{{ $d->name }}'>
+      </div>
+
       <div class="form-group">
         <label>Pilihan</label>
         <select class="form-control kt-select2"  id="kt_select2_1_pilihan" name="pilihan">
