@@ -46,6 +46,16 @@ class FormPerijinanController extends Controller
 
         if(FormPerijinan::create($validated_data)){
             //register berhasil
+
+            // notifikasi
+            $userLogin = User::find($validated_data['user_id']);
+            $msg = "$userLogin->name membuat form perijinan";
+            try {
+                $user->notify(new FormCreated($msg,'FORM-ASURANSI-PERIJINAN', FormAsuransiJiwa::class));
+            } catch (\Throwable $th) {
+                $flagErrorMail = true;
+            }
+            
             return redirect()->back()->with('success','Berhasil Input Data');
         }else{
             return redirect()->back()->with('danger','Gagal Input Data');
